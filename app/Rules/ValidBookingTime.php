@@ -42,6 +42,7 @@ class ValidBookingTime implements Rule
                     $bookingDateTime->copy()->addMinutes(59)
                 ]);
             })
+            ->where('status', '=', 'Reserved')
             ->exists();
 
         

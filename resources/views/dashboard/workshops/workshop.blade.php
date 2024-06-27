@@ -90,6 +90,7 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        </form>
                                     </div>
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-danger light btn-sm"
@@ -129,21 +130,21 @@
                                                 <form id="underwayForm{{ $workshop->workshop_id }}" method="POST" action="{{ route('workshop.updateStatus', ['id' => $workshop->workshop_id]) }}">
                                                     @csrf
                                                     <input type="hidden" name="status" value="Underway">
-                                                    <button type="submit" class="btn btn-secondary shadow btn-xs sharp me-1 sweet-confirm" data-status="Underway"><i class="fas fa-wrench"></i></button>
+                                                    <button type="button" class="btn btn-secondary shadow btn-xs sharp me-1 sweet-confirm" data-status="Underway"><i class="fas fa-wrench"></i></button>
                                                 </form>
                                 
                                                 <!-- Form untuk mengubah status menjadi 'Postponed' -->
                                                 <form id="postponedForm{{ $workshop->workshop_id }}" method="POST" action="{{ route('workshop.updateStatus', ['id' => $workshop->workshop_id]) }}">
                                                     @csrf
                                                     <input type="hidden" name="status" value="Postponed">
-                                                    <button type="submit" class="btn btn-warning shadow btn-xs sharp me-1 sweet-confirm" data-status="Postponed"><i class="fas fa-history"></i></button>
+                                                    <button type="button" class="btn btn-warning shadow btn-xs sharp me-1 sweet-confirm" data-status="Postponed"><i class="fas fa-history"></i></button>
                                                 </form>
                                 
                                                 <!-- Form untuk mengubah status menjadi 'Finished' -->
                                                 <form id="finishedForm{{ $workshop->workshop_id }}" method="POST" action="{{ route('workshop.updateStatus', ['id' => $workshop->workshop_id]) }}">
                                                     @csrf
                                                     <input type="hidden" name="status" value="Finished">
-                                                    <button type="submit" class="btn btn-success shadow btn-xs sharp me-1 sweet-confirm" data-status="Finished"><i class="fas fa-check"></i></button>
+                                                    <button type="button" class="btn btn-success shadow btn-xs sharp me-1 sweet-confirm" data-status="Finished"><i class="fas fa-check"></i></button>
                                                 </form>
                                             </div>
                                         </td>

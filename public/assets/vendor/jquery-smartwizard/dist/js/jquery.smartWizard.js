@@ -829,6 +829,9 @@ function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "functi
           switch (this._getStepPosition(idx)) {
             case 'first':
               this.main.find('.sw-btn-prev').addClass("disabled");
+              this.main.find('.sw-btn-next').text(this.options.lang.next).attr('type', 'button').off('click').on('click', function() {
+                self._showNext(); // Call the _showNext function to handle navigation
+              });
               break;
     
             case 'last':

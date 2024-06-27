@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id('transaction_id');
             $table->string('reference_number');
-            $table->text('description');
-            $table->string('total');
-            $table->enum('payment_method',['Cash','Credit Card','Bank Transfer']);
+            $table->text('description')->nullable();
+            $table->string('total')->nullable();
+            $table->enum('payment_method',['Cash','Credit Card','Bank Transfer'])->nullable();
             $table->enum('payment_status',['Failed','Pending','Paid'])->default('Pending');
-            $table->unsignedBigInteger('vehicle_id');
-            $table->unsignedBigInteger('booking_id');
+            $table->unsignedBigInteger('customer_id')->nullable();
+            $table->unsignedBigInteger('vehicle_id')->nullable();
+            $table->unsignedBigInteger('booking_id')->nullable();
+            $table->foreign('customer_id')->references('customer_id')->on('customers');
             $table->foreign('vehicle_id')->references('vehicle_id')->on('vehicles');
             $table->foreign('booking_id')->references('booking_id')->on('bookings');
             $table->timestamps();

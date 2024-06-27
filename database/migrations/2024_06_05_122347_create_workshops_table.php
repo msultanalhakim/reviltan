@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('workshop_name');
             $table->enum('status',['Underway','Postponed', 'Finished'])->default('Underway');
             $table->unsignedBigInteger('vehicle_id')->nullable();
+            $table->unsignedBigInteger('booking_id')->nullable();
             $table->foreign('vehicle_id')->references('vehicle_id')->on('vehicles');
             $table->timestamps();
         });

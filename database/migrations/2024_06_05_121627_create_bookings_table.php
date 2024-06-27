@@ -16,7 +16,9 @@ return new class extends Migration
             $table->dateTime('booking_time');
             $table->enum('status', ['Canceled', 'Reserved', 'Completed'])->default('Reserved');
             $table->unsignedBigInteger('customer_id');
+            $table->unsignedBigInteger('vehicle_id');
             $table->foreign('customer_id')->references('customer_id')->on('customers');
+            $table->foreign('vehicle_id')->references('vehicle_id')->on('vehicles');
             $table->timestamps();
         });
         

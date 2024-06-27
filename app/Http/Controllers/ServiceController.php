@@ -6,9 +6,11 @@ use App\Models\Booking;
 use App\Models\Vehicle;
 use App\Models\Customer;
 use App\Models\Province;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Carbon;
+use App\Rules\ValidBookingTime;
+use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
 {
@@ -38,41 +40,52 @@ class ServiceController extends Controller
                             ->select('customers.*', 'vehicles.*')
                             ->where('vehicles.customer_id', $id)
                             ->get();
-        
+
+        $userBooking = Booking::where('customer_id', $id)
+                            ->where('status', '=', 'Reserved')
+                            ->get();
+
+        if ($userBooking) {
+            // Format the booking data
+            $formattedUserBooking = $userBooking->map(function($booking) {
+                return [
+                    'booking_time' => Carbon::parse($booking->booking_time)->format('H:i'),
+                    'booking_date' => Carbon::parse($booking->booking_time)->format('l, d F Y'),
+                ];
+            });
+        }
+
         // Fetch booking data ordered by booking_time in ascending order
-        $bookingData = Booking::where('status', '!=', 'Completed')
+        $bookingData = Booking::where('status', '=', 'Reserved')
                             ->orderBy('booking_time', 'asc')
                             ->get();
 
-        $userBooking = Booking::where('customer_id', $id)
-                            ->where('status', '!=', 'Completed')
-                            ->get();
+        if ($bookingData) {
+            // Format the booking data
+            $formattedBookingData = $bookingData->map(function($booking) {
+                return [
+                    'booking_time' => Carbon::parse($booking->booking_time)->format('H:i'),
+                    'booking_date' => Carbon::parse($booking->booking_time)->format('l, d F Y'),
+                    'status' => $booking->status,
+                ];
+            });
+        }
 
         $bookingUnderway = Booking::join('workshops', 'workshops.booking_id', '=', 'bookings.booking_id')
-        ->join('customers', 'customers.customer_id', '=', 'bookings.customer_id')
-        ->where('bookings.customer_id', $id)
-        ->where('bookings.status', '=', 'Completed')
-        ->get();
+                                ->join('customers', 'customers.customer_id', '=', 'bookings.customer_id')
+                                ->where('bookings.customer_id', $id)
+                                ->where('bookings.status', '=', 'Reserved')
+                                ->get();
 
+        $transactionData = Transaction::join('bookings', 'bookings.booking_id', '=', 'transactions.booking_id')
+                                ->where('bookings.customer_id', $id)
+                                ->where('bookings.status', '=', 'Completed')
+                                ->where('transactions.payment_status', '=', 'Pending')
+                                ->latest('transactions.created_at') // Mengurutkan berdasarkan waktu pembuatan transaksi terbaru
+                                ->first(); // Mengambil data pertama dari hasil urutan terbaru
 
-        // Format the booking data
-        $formattedBookingData = $bookingData->map(function($booking) {
-            return [
-                'booking_time' => Carbon::parse($booking->booking_time)->format('H:i'),
-                'booking_date' => Carbon::parse($booking->booking_time)->format('l, d F Y'),
-                'status' => $booking->status,
-            ];
-        });
-
-        // Format the booking data
-        $formattedBookingUnderway = $bookingUnderway->map(function($booking) {
-            return [
-                'booking_time' => Carbon::parse($booking->booking_time)->format('H:i'),
-                'booking_date' => Carbon::parse($booking->booking_time)->format('l, d F Y'),
-            ];
-        });
-
-        return view('dashboard.services.service', compact('userData', 'vehicleData', 'formattedBookingData', 'userBooking', 'bookingUnderway', 'formattedBookingUnderway'));
+        
+        return view('dashboard.services.service', compact('userData', 'vehicleData', 'userBooking', 'bookingUnderway', 'transactionData', 'formattedBookingData', 'formattedUserBooking'));
     }
 
     public function fetchVehicle (Request $request) {
@@ -80,5 +93,30 @@ class ServiceController extends Controller
         ->get();
                             
         return response()->json($data);
+    }
+
+    public function serviceBooking (Request $request) {
+        $request->validate([
+            'customer_id' => 'required',
+            'vehicle_id' => 'required',
+            'date' => ['required', 'after_or_equal:today'],
+            'time' => ['required', new ValidBookingTime($request->input('date'))],
+        ]);            
+                
+        $datetime = Carbon::parse($request->date)->format('Y-m-d').' '.Carbon::parse($request->time)->format('H:i:s');
+
+        Booking::create([
+            'booking_time' => $datetime,
+            'status' => 'Reserved', 
+            'customer_id' => $request->customer_id,
+            'vehicle_id' => $request->vehicle_id
+        ]);
+
+        $notification = array(
+            'message' => 'Booking has been successfully added',
+            'alert-type' => 'success',
+        );
+
+        return redirect()->route('service')->with($notification);
     }
 }

@@ -33,6 +33,7 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'view'])->name('dashboard');
     Route::get('/booking', [BookingController::class, 'view'])->name('booking');
     Route::get('/service', [ServiceController::class, 'view'])->name('service');
+    Route::post('/service/booking', [ServiceController::class, 'serviceBooking'])->name('service.booking');
     Route::post('/api/fetch-vehicle-data', [ServiceController::class, 'fetchVehicle']);
     Route::get('/workshop', [WorkshopController::class, 'view'])->name('workshop');
     Route::get('/workshop/add', [WorkshopController::class, 'create'])->name('workshop.add');
@@ -40,6 +41,11 @@ Route::middleware('auth', 'verified')->group(function () {
     Route::post('/workshop/underway/{id}', [WorkshopController::class, 'underway'])->name('workshop.underway');
     Route::post('/workshop/{id}/update-status', [WorkshopController::class, 'updateStatus'])->name('workshop.updateStatus');
     Route::get('/transaction', [TransactionController::class, 'view'])->name('transaction');
+    Route::post('/transaction/item/store', [TransactionController::class, 'storeItem'])->name('transaction.item.store');
+    Route::get('/transaction/manage/{id}', [TransactionController::class, 'viewManage'])->name('transaction.manage');    
+    Route::post('/transaction/manage/store', [TransactionController::class, 'storeManage'])->name('transaction.manage.store');    
+    Route::get('/transaction/delete/{id}', [TransactionController::class, 'deleteTransaction'])->name('transaction.delete');
+    Route::post('/api/fetch-item', [TransactionController::class, 'fetchItem']);
     Route::get('/history', [HistoryController::class, 'view'])->name('history');
     Route::get('/history/add', [HistoryController::class, 'view'])->name('history.add');
     Route::get('/province', [ProvinceController::class, 'view'])->name('province');
