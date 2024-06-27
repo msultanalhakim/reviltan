@@ -21,7 +21,7 @@ CREATE TABLE `bookings` (
   KEY `vehicle_id` (`vehicle_id`),
   CONSTRAINT `bookings_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`),
   CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`vehicle_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=40 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=43 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `cache`;
 CREATE TABLE `cache` (
@@ -71,6 +71,21 @@ CREATE TABLE `customers` (
   CONSTRAINT `customers_province_id_foreign` FOREIGN KEY (`province_id`) REFERENCES `provinces` (`province_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+DROP TABLE IF EXISTS `details`;
+CREATE TABLE `details` (
+  `detail_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `reference_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `quantity` bigint unsigned NOT NULL,
+  `item_id` bigint unsigned NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`detail_id`),
+  KEY `details_reference_number_index` (`reference_number`),
+  KEY `details_item_id_foreign` (`item_id`),
+  CONSTRAINT `details_item_id_foreign` FOREIGN KEY (`item_id`) REFERENCES `items` (`item_id`),
+  CONSTRAINT `details_reference_number_foreign` FOREIGN KEY (`reference_number`) REFERENCES `transactions` (`reference_number`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 DROP TABLE IF EXISTS `failed_jobs`;
 CREATE TABLE `failed_jobs` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
@@ -108,6 +123,18 @@ CREATE TABLE `histories` (
   CONSTRAINT `histories_vehicle_id_foreign` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`vehicle_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+DROP TABLE IF EXISTS `items`;
+CREATE TABLE `items` (
+  `item_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `item_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `item_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `price` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`item_id`),
+  UNIQUE KEY `item_code` (`item_code`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 DROP TABLE IF EXISTS `job_batches`;
 CREATE TABLE `job_batches` (
   `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -142,7 +169,7 @@ CREATE TABLE `migrations` (
   `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `password_reset_tokens`;
 CREATE TABLE `password_reset_tokens` (
@@ -178,20 +205,24 @@ DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
   `transaction_id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `reference_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `total` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `payment_method` enum('Cash','Credit Card','Bank Transfer') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `total` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `payment_method` enum('Cash','Bank Transfer') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `vehicle_id` bigint unsigned DEFAULT NULL,
   `payment_status` enum('Failed','Pending','Paid') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Pending',
-  `vehicle_id` bigint unsigned NOT NULL,
+  `file` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `customer_id` bigint unsigned DEFAULT NULL,
   `booking_id` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`transaction_id`),
-  KEY `transactions_vehicle_id_foreign` (`vehicle_id`),
+  UNIQUE KEY `reference_number` (`reference_number`) USING BTREE,
   KEY `transactions_booking_id_foreign` (`booking_id`),
+  KEY `customer_id` (`customer_id`),
+  KEY `vehicle_id` (`vehicle_id`),
   CONSTRAINT `transactions_booking_id_foreign` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`),
-  CONSTRAINT `transactions_vehicle_id_foreign` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`vehicle_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`),
+  CONSTRAINT `transactions_ibfk_2` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`vehicle_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
@@ -236,9 +267,9 @@ CREATE TABLE `workshops` (
   `workshop_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('Underway','Postponed','Finished') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Underway',
   `vehicle_id` bigint unsigned DEFAULT NULL,
+  `booking_id` bigint unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `booking_id` bigint unsigned DEFAULT NULL,
   PRIMARY KEY (`workshop_id`),
   KEY `workshops_vehicle_id_foreign` (`vehicle_id`) USING BTREE,
   KEY `booking_id` (`booking_id`),
@@ -253,10 +284,13 @@ INSERT INTO `bookings` (`booking_id`, `booking_time`, `status`, `customer_id`, `
 INSERT INTO `bookings` (`booking_id`, `booking_time`, `status`, `customer_id`, `created_at`, `updated_at`, `vehicle_id`) VALUES
 (35, '2024-06-13 01:10:00', 'Completed', 1, '2024-06-12 09:12:49', '2024-06-12 09:12:49', 1);
 INSERT INTO `bookings` (`booking_id`, `booking_time`, `status`, `customer_id`, `created_at`, `updated_at`, `vehicle_id`) VALUES
-(36, '2024-06-12 19:30:00', 'Canceled', 1, '2024-06-12 09:14:06', '2024-06-12 09:14:06', 2),
-(37, '2024-06-12 20:31:00', 'Reserved', 1, '2024-06-12 09:16:05', '2024-06-12 09:16:05', 1),
+(36, '2024-06-12 19:30:00', 'Completed', 1, '2024-06-12 09:14:06', '2024-06-12 09:14:06', 2),
+(37, '2024-06-12 20:31:00', 'Completed', 1, '2024-06-12 09:16:05', '2024-06-12 09:16:05', 1),
 (38, '2024-06-12 21:31:00', 'Completed', 1, '2024-06-12 09:20:58', '2024-06-25 15:02:32', 1),
-(39, '2024-06-25 16:30:00', 'Completed', 2, '2024-06-25 14:58:30', '2024-06-25 14:58:30', NULL);
+(39, '2024-06-25 16:30:00', 'Completed', 2, '2024-06-25 14:58:30', '2024-06-25 14:58:30', NULL),
+(40, '2024-06-26 18:30:00', 'Completed', 1, '2024-06-26 01:17:27', '2024-06-26 01:47:26', 1),
+(41, '2024-06-26 18:30:00', 'Canceled', 1, '2024-06-26 02:02:53', '2024-06-26 02:02:53', 1),
+(42, '2024-06-26 18:30:00', 'Completed', 1, '2024-06-26 16:05:04', '2024-06-26 16:57:10', 1);
 
 INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
 ('9e6a55b6b4563e652a23be9d623ca5055c356940', 'i:1;', 1718122405);
@@ -304,9 +338,30 @@ INSERT INTO `customers` (`customer_id`, `customer_name`, `address`, `phone`, `em
 (16, NULL, NULL, NULL, 'diva@gmail.com', NULL, NULL, NULL, '2024-06-10 13:46:24', '2024-06-10 13:46:24'),
 (17, NULL, NULL, NULL, 'wadimor@gmail.com', NULL, NULL, NULL, '2024-06-11 23:12:04', '2024-06-11 23:12:04');
 
+INSERT INTO `details` (`detail_id`, `reference_number`, `quantity`, `item_id`, `created_at`, `updated_at`) VALUES
+(1, 'th2he2cXRLDgkU13', 4, 1, NULL, '2024-06-27 03:10:51');
+INSERT INTO `details` (`detail_id`, `reference_number`, `quantity`, `item_id`, `created_at`, `updated_at`) VALUES
+(2, 'th2he2cXRLDgkU13', 1, 2, '2024-06-27 01:55:44', '2024-06-27 01:55:44');
+INSERT INTO `details` (`detail_id`, `reference_number`, `quantity`, `item_id`, `created_at`, `updated_at`) VALUES
+(3, 'th2he2cXRLDgkU13', 2, 3, '2024-06-27 01:57:13', '2024-06-27 01:57:13');
+INSERT INTO `details` (`detail_id`, `reference_number`, `quantity`, `item_id`, `created_at`, `updated_at`) VALUES
+(4, 'th2he2cXRLDgkU13', 3, 5, '2024-06-27 02:00:26', '2024-06-27 02:28:03');
 
 
 
+
+
+INSERT INTO `items` (`item_id`, `item_code`, `item_name`, `price`, `created_at`, `updated_at`) VALUES
+(1, 'SRV', 'Service', '120000', '2024-06-26 01:47:26', '2024-06-26 01:47:26');
+INSERT INTO `items` (`item_id`, `item_code`, `item_name`, `price`, `created_at`, `updated_at`) VALUES
+(2, 'SRV-OIL', 'Oil Change', '80000', '2024-06-26 01:47:26', '2024-06-26 01:47:26');
+INSERT INTO `items` (`item_id`, `item_code`, `item_name`, `price`, `created_at`, `updated_at`) VALUES
+(3, 'SRV-TRANS', 'Service Transmission', '900000', '2024-06-26 01:47:26', '2024-06-26 01:47:26');
+INSERT INTO `items` (`item_id`, `item_code`, `item_name`, `price`, `created_at`, `updated_at`) VALUES
+(4, 'SRV-ENGINE', 'Service Engine', '1800000', '2024-06-26 01:47:26', '2024-06-26 01:47:26'),
+(5, 'SRV-SUSP', 'Service Suspension', '500000', '2024-06-26 01:47:26', '2024-06-26 01:47:26'),
+(6, 'BR-UP', 'Bore Up', '1350000', '2024-06-26 01:47:26', '2024-06-26 01:47:26'),
+(7, 'SRV-TIRES', 'Service Tires', '350000', '2024-06-26 01:47:26', '2024-06-26 01:47:26');
 
 
 
@@ -326,7 +381,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (8, '2024_06_05_122347_create_workshops_table', 1),
 (9, '2024_06_05_122358_create_vehicles_table', 1),
 (10, '2024_06_05_122420_create_transactions_table', 1),
-(11, '2024_06_05_122448_create_histories_table', 1);
+(11, '2024_06_05_122448_create_histories_table', 1),
+(18, '2024_06_26_184408_create_items_table', 2),
+(19, '2024_06_26_184419_create_details_table', 2);
 
 
 
@@ -341,9 +398,13 @@ INSERT INTO `provinces` (`province_id`, `province_name`, `created_at`, `updated_
 (5, 'North Sumatera', '2024-06-07 16:03:21', '2024-06-07 16:03:21');
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('uAQ1k7PQgqf5ZRmUBA0Qu9v2ZOEADcLmFb7u9R9o', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoicXZSWm53Q0pNa2hLemRpVkJTQzc5RG9TSGVmT0RaM0JwS2hFVnBreSI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjI5OiJodHRwOi8vbG9jYWxob3N0OjgwMDAvc2VydmljZSI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1719313627);
+('GKqNYtwe3Qs47FM2HDFxZxOlWEQfzphgn22CPtVi', 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiZW1pbEhldXlNckxRRmI3SldpcFZwcjZNaXRjUVZPY1VIMnY1ZTE4UyI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjE6e3M6MzoidXJsIjtzOjU3OiJodHRwOi8vbG9jYWxob3N0OjgwMDAvdHJhbnNhY3Rpb24vbWFuYWdlL3RoMmhlMmNYUkxEZ2tVMTMiO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxO30=', 1719433704);
 
 
+INSERT INTO `transactions` (`transaction_id`, `reference_number`, `total`, `payment_method`, `vehicle_id`, `payment_status`, `file`, `customer_id`, `booking_id`, `created_at`, `updated_at`) VALUES
+(1, 'QPjAcYyTTDs', NULL, NULL, 1, 'Paid', NULL, 1, 40, '2024-06-26 01:47:26', '2024-06-26 01:47:26');
+INSERT INTO `transactions` (`transaction_id`, `reference_number`, `total`, `payment_method`, `vehicle_id`, `payment_status`, `file`, `customer_id`, `booking_id`, `created_at`, `updated_at`) VALUES
+(2, 'th2he2cXRLDgkU13', '3860000', NULL, 1, 'Pending', NULL, 1, 42, '2024-06-26 16:57:10', '2024-06-27 03:21:19');
 
 
 INSERT INTO `users` (`id`, `username`, `email`, `email_verified_at`, `password`, `role`, `status`, `customer_id`, `remember_token`, `created_at`, `updated_at`) VALUES
@@ -374,13 +435,13 @@ INSERT INTO `vehicles` (`vehicle_id`, `vehicle_name`, `vehicle_color`, `chassis_
 (2, 'BMW M5CS', 'Black', '2HXSKLW20KDMLSAKPWL', '4NCS0PVX4LBR790', 4000, 'F 6568 FHI', 2, NULL, NULL);
 
 
-INSERT INTO `workshops` (`workshop_id`, `workshop_name`, `status`, `vehicle_id`, `created_at`, `updated_at`, `booking_id`) VALUES
-(2, 'Workshop 1', 'Finished', 2, '2024-06-12 19:13:47', '2024-06-25 02:12:49', 37);
-INSERT INTO `workshops` (`workshop_id`, `workshop_name`, `status`, `vehicle_id`, `created_at`, `updated_at`, `booking_id`) VALUES
-(3, 'Workshop 2', 'Underway', 2, '2024-06-12 19:14:40', '2024-06-25 15:01:15', NULL);
-INSERT INTO `workshops` (`workshop_id`, `workshop_name`, `status`, `vehicle_id`, `created_at`, `updated_at`, `booking_id`) VALUES
+INSERT INTO `workshops` (`workshop_id`, `workshop_name`, `status`, `vehicle_id`, `booking_id`, `created_at`, `updated_at`) VALUES
+(2, 'Workshop 1', 'Postponed', NULL, NULL, '2024-06-12 19:13:47', '2024-06-26 16:57:10');
+INSERT INTO `workshops` (`workshop_id`, `workshop_name`, `status`, `vehicle_id`, `booking_id`, `created_at`, `updated_at`) VALUES
+(3, 'Workshop 2', 'Underway', 2, NULL, '2024-06-12 19:14:40', '2024-06-25 15:01:15');
+INSERT INTO `workshops` (`workshop_id`, `workshop_name`, `status`, `vehicle_id`, `booking_id`, `created_at`, `updated_at`) VALUES
 (4, 'Workshop 3', 'Finished', 1, NULL, NULL, NULL);
-INSERT INTO `workshops` (`workshop_id`, `workshop_name`, `status`, `vehicle_id`, `created_at`, `updated_at`, `booking_id`) VALUES
+INSERT INTO `workshops` (`workshop_id`, `workshop_name`, `status`, `vehicle_id`, `booking_id`, `created_at`, `updated_at`) VALUES
 (5, 'Workshop 4', 'Underway', 1, NULL, NULL, NULL);
 
 
