@@ -6,16 +6,16 @@
 
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Shop</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Customers</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('province') }}">Provinces</a></li>
             </ol>
         </div>
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Profile Datatable</h4><br>
-                        <a href="{{ route('province.add') }}" class="btn btn-primary btn-sm">Add</a>
+                        <h4 class="card-title">Data Provinces</h4><br>
+                        <a href="{{ route('province.add') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i></a>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -29,16 +29,17 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($provinces as $province)
+                                    @foreach($provinces as $key => $province)
                                     <tr>
-                                        <td>{{ $province->province_id }}</td>
+                                        <td>{{ $key+1 }}</td>
                                         <td>{{ $province->province_name }}</td>
                                         <td>
                                             <div class="d-flex">
-                                                {{-- <a href="{{ route('edit.types', ['id' => $item->id]) }}" class="btn btn-primary shadow btn-xs sharp me-1"><i
-                                                        class="fas fa-pencil-alt"></i></a> --}}
-                                                <a href="#" class="btn btn-danger shadow btn-xs sharp"><i
-                                                        class="fa fa-trash"></i></a>
+                                                <a href="{{ route('province.update', ['id' => $province->province_id]) }}" class="btn btn-primary shadow btn-xs sharp me-1"><i
+                                                        class="fas fa-pencil-alt"></i></a>
+                                                <a href="" class="btn btn-danger shadow btn-xs sharp sweet-destroy" data-id="{{ $province->province_id }}">
+                                                    <i class="fa fa-trash"></i>
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
@@ -57,4 +58,27 @@
     <!-- Datatable -->
     <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('.sweet-destroy').on('click', function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                var provinceId = $(this).data('id');
+    
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'error',
+                    showCancelButton: true,
+                    confirmButtonClass: 'btn btn-primary',
+                    cancelButtonClass: 'btn btn-danger',
+                    confirmButtonText: 'Delete',
+                    cancelButtonText: 'Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{{ url('province/destroy') }}/" + provinceId; // Redirect to destroy route
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

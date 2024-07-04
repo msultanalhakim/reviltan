@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Coupon;
+use App\Models\Detail;
 use App\Models\Booking;
+use App\Models\History;
 use App\Models\Vehicle;
 use App\Models\Customer;
 use App\Models\Province;
@@ -78,14 +81,29 @@ class ServiceController extends Controller
                                 ->get();
 
         $transactionData = Transaction::join('bookings', 'bookings.booking_id', '=', 'transactions.booking_id')
+                                ->join('customers', 'customers.customer_id', '=', 'transactions.customer_id')
+                                ->join('vehicles', 'vehicles.vehicle_id', '=', 'transactions.vehicle_id')
                                 ->where('bookings.customer_id', $id)
                                 ->where('bookings.status', '=', 'Completed')
-                                ->where('transactions.payment_status', '=', 'Pending')
-                                ->latest('transactions.created_at') // Mengurutkan berdasarkan waktu pembuatan transaksi terbaru
-                                ->first(); // Mengambil data pertama dari hasil urutan terbaru
+                                ->where(function($query) {
+                                    $query->whereNull('transactions.transaction_status')
+                                          ->orWhere('transactions.transaction_status', '');
+                                })
+                                ->latest('transactions.created_at')
+                                ->first();
 
-        
-        return view('dashboard.services.service', compact('userData', 'vehicleData', 'userBooking', 'bookingUnderway', 'transactionData', 'formattedBookingData', 'formattedUserBooking'));
+        if (!$transactionData) {
+            return view('dashboard.services.service', compact('userData', 'vehicleData', 'userBooking', 'bookingUnderway', 'transactionData', 'formattedBookingData', 'formattedUserBooking'));
+        } else {
+            $detailsData = Detail::where('reference_number', $transactionData->reference_number)
+            ->join('items', 'items.item_id', '=', 'details.item_id')
+            ->get();
+    
+            $coupon = Coupon::where('coupon_code', $transactionData->coupon_code)
+            ->first();
+            // dd($transactionData->reference_number,$transactionData->customer_name );
+            return view('dashboard.services.service', compact('userData', 'vehicleData', 'userBooking', 'bookingUnderway', 'transactionData', 'coupon', 'detailsData', 'formattedBookingData', 'formattedUserBooking'));
+        }
     }
 
     public function fetchVehicle (Request $request) {
@@ -118,5 +136,119 @@ class ServiceController extends Controller
         );
 
         return redirect()->route('service')->with($notification);
+    }
+
+    public function serviceDiscount (Request $request) {
+        $request->validate([
+            'coupon' => 'required|exists:coupons,coupon_code',
+        ]);
+
+        $reference_number = $request->reference_number;
+        $coupon = $request->coupon;
+
+        $couponData = Coupon::where('coupon_code', $coupon)
+                            ->first();
+
+        if ($couponData) {
+            $transactionData = Transaction::where('reference_number', $reference_number)
+            ->first();
+
+            $transactionData->coupon_code = $coupon;
+            $transactionData->save();
+
+            $notification = array(
+                'message' => 'Promo added successfully',
+                'alert-type' => 'success',
+            );
+        }
+        return redirect()->route('service')->with($notification);
+    }
+
+    public function serviceRemove ($id) {
+        $transactionData = Transaction::where('reference_number', $id)
+                                ->first();
+
+        if ($transactionData) {
+            $transactionData->coupon_code = '';
+            $transactionData->save();
+    
+            $notification = array(
+                'message' => 'Promo removed successfully',
+                'alert-type' => 'success',
+            );
+        }
+
+        return redirect()->route('service')->with($notification);
+
+    }
+
+    public function serviceStore (Request $request) {
+        $request->validate([
+            'reference_number' => 'required',
+        ]);
+
+        $reference_number = $request->reference_number;
+        $transaction = Transaction::where('reference_number', $reference_number)
+        ->first();
+
+        if ($request->has('action')) {
+            $action = $request->input('action');
+    
+            if ($action == 'proceed') {
+                $request->validate([
+                    'payment_method' => 'required',
+                ]);
+                $payment_method = $request->payment_method;
+                $total = $request->total;
+
+                if($transaction) {
+                    if ($payment_method == 'Bank Transfer') {
+                        // Handle file upload
+                        if ($request->hasFile('receipt')) {
+                            $file = $request->file('receipt');
+                            $extension = $file->getClientOriginalExtension(); // Get the original file extension
+                            $filename = 'Receipt-'.$transaction->reference_number.' '.date('Y-m-d').' '.date('his').'.'.$extension; 
+                            // Ensure a unique filename
+                            $file->move(public_path('assets/img/receipt/'), $filename);
+                            $transaction->file = $filename;
+                        }
+                    }
+                    $transaction->total = $total;
+                    $transaction->payment_method = $payment_method;
+                    $transaction->save();
+
+                    $notification = array(
+                        'message' => 'Transaction has been submitted',
+                        'alert-type' => 'success',
+                    );
+                }
+                return redirect()->route('service')->with($notification);
+                
+            } elseif ($action == 'finish') {
+                if ($transaction) {
+                    $transaction->transaction_status = 'Finished';
+                    $transaction->save();
+
+                    History::create([
+                        'reference_number' => $transaction->reference_number,
+                        'total' => $transaction->total,
+                        'coupon_code' => $transaction->coupon_code,
+                        'payment_method' => $transaction->payment_method,
+                        'payment_status' => $transaction->payment_status,
+                        'transaction_status' => 'Finished',
+                        'vehicle_id' => $transaction->vehicle_id,
+                        'customer_id' => $transaction->customer_id,
+                        'booking_id' => $transaction->booking_id
+                    ]);
+
+                    $notification = array(
+                        'message' => 'Transaction has been finished',
+                        'alert-type' => 'success',
+                    );
+
+                    return redirect()->route('transaction')->with($notification);
+                }
+            }
+        }
     }
 }

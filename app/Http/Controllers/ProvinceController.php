@@ -19,6 +19,21 @@ class ProvinceController extends Controller
         return view ('dashboard.provinces.province_add');
     }
 
+    public function update ($id) {
+        $province = Province::where('province_id', $id)->first();
+
+        if (!$province){
+            $notification = [
+                'message' => 'Province not found',
+                'alert-type' => 'error'
+            ];
+            
+            return redirect()->route('province')->with($notification);
+        } 
+
+        return view ('dashboard.provinces.province_edit', compact('province'));
+    }
+
     public function store (Request $request) {
         $request->validate([
             'province_name' => 'required|max:40',
@@ -28,57 +43,55 @@ class ProvinceController extends Controller
             'province_name' => $request->province_name,
         ]);
 
-        // $notification = [
-        //     'message' => 'Property Type has been added',
-        //     'alert-type' => 'success',
-        // ];
+        $notification = [
+            'message' => 'Province has been successfully added',
+            'alert-type' => 'success',
+        ];
 
-        return redirect()->route('province');
+        return redirect()->route('province')->with($notification);
     }
 
-    public function AdminChangePassword() {
-        $id = Auth::user()->id;
-        $profileData = Province::find($id);
-        return view('admin.admin_change_password', compact('profileData'));
-    }
-
-    public function AdminUpdatePassword(Request $request) {
-        // Validation
+    public function storeUpdate (Request $request) {
         $request->validate([
-            'old_password' => 'required',
-            'new_password' => 'required|confirmed'
-            // 'new_password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()->mixedCase()->symbols()->uncompromised()],
+            'province_name' => 'required|max:40',
         ]);
 
-        if (!Hash::check($request->old_password, auth()->user()->password)) {
+        $province = Province::findOrFail($request->province_id);
+
+        if ($province) {
+            $province->province_name = $request->province_name;
+            $province->save();
+
             $notification = [
-                'message' => 'The old password is incorrect',
+                'message' => 'Province has been successfully updated',
+                'alert-type' => 'success',
+            ];
+        } else {
+            $notification = [
+                'message' => 'Province has been failed to update',
                 'alert-type' => 'error',
             ];
-
-            return back()->with($notification);
-        } else {
-            $newPassword = Hash::make($request->new_password);
-
-            if ($newPassword) {
-                Province::whereId(auth()->user()->id)->update([
-                    'password' => $newPassword
-                ]);
-
-                $notification = [
-                    'message' => 'Password updated successfully',
-                    'alert-type' => 'success',
-                ];
-
-                return back()->with($notification);
-            } else {
-                $notification = [
-                    'message' => 'Failed to update password',
-                    'alert-type' => 'error',
-                ];
-
-                return back()->with($notification);
-            }
         }
+
+        return redirect()->route('province')->with($notification);
+    }
+
+    public function destroy ($id) {
+        
+        $province = Province::findOrFail($id)->delete();
+
+        if ($province) {
+            $notification = [
+                'message' => 'Province has been successfully delete',
+                'alert-type' => 'success'
+            ];
+        } else {
+            $notification = [
+                'message' => 'Province has been failed to delete',
+                'alert-type' => 'error'
+            ];
+        }
+
+        return redirect()->route('province')->with($notification);
     }
 }

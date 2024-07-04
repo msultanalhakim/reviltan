@@ -48,7 +48,7 @@
                                     <div class="mb-3 col-md-6">
                                         <label class="form-label" for="name">Full Name</label>
                                         <input type="text" class="form-control @error('name') is-invalid @enderror" name="name" id="name" placeholder="Full Name"
-                                            value="{{ $userData->customer_name ?? '' }}">
+                                            value="{{ $userData->customer_name ?? old('name') }}">
                                             @error('name')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
@@ -58,7 +58,7 @@
                                     <div class="mb-3 col-md-6">
                                         <label class="form-label" for="username">Username</label>
                                         <input type="text" class="form-control @error('username') is-invalid @enderror" name="username" id="username" placeholder="Username"
-                                            value="{{ $userData->username ?? '' }}">
+                                            value="{{ $userData->username ?? old('username') }}">
                                             @error('username')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
@@ -68,7 +68,7 @@
                                     <div class="mb-3 col-md-6">
                                         <label class="form-label" for="phone">Phone</label>
                                         <input type="text" class="form-control @error('phone') is-invalid @enderror" name="phone" id="phone" placeholder="Phone"
-                                            value="{{ $userData->phone ?? '' }}">
+                                            value="{{ $userData->phone ?? old('phone') }}">
                                             @error('phone')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
@@ -79,7 +79,7 @@
                                         <label class="form-label" for="address">Address</label>
                                         <textarea class="form-control @error('address') is-invalid @enderror" rows="4" id="address" name="address"
                                             style="min-height: 180px;"
-                                            placeholder="Address">{{ $userData->address ?? '' }}</textarea>
+                                            placeholder="Address">{{ $userData->address ?? old('address') }}</textarea>
                                             @error('address')
                                                 <span class="invalid-feedback" role="alert">
                                                     <strong>{{ $message }}</strong>
@@ -90,7 +90,7 @@
                                         <label class="form-label" for="province-dropdown">Province</label>
                                         <div class="basic-form">
                                             <select class="form-control wide mb-3 @error('province') is-invalid @enderror" id="province-dropdown" name="province">
-                                                <option value="{{ $userData->province_id ?? '' }}" selected>{{ $userData->province_name ?? 'Select Province' }}</option>
+                                                <option value="{{ $userData->province_id ?? old('province_id') }}" selected>{{ $userData->province_name ?? 'Select Province' }}</option>
                                                 @foreach ($provinces as $data)
                                                 <option value="{{$data->province_id}}">
                                                     {{$data->province_name}}
@@ -108,7 +108,7 @@
                                         <label class="form-label" for="city-dropdown">City</label>
                                         <div class="basic-form">
                                             <select class="form-control wide mb-3 @error('city') is-invalid @enderror" id="city-dropdown" name="city">
-                                                <option value="{{ $userData->city_id ?? '' }}" selected>{{ $userData->city_name ?? 'Select City' }}</option>
+                                                <option value="{{ $userData->city_id ?? old('city_id') }}" selected>{{ $userData->city_name ?? 'Select City' }}</option>
                                             </select>
                                             @error('city')
                                                 <span class="invalid-feedback" role="alert">
@@ -135,7 +135,7 @@
                                     </div>
                                     <div class="mt-3 pb-3 row">
                                         <div class="col-sm-12 text-right">
-                                            <button type="submit" class="btn btn-primary">Update</button>
+                                            <button type="submit" class="btn btn-primary" id="submit-button">Update</button>
                                         </div>
                                     </div>
                                 </div>

@@ -11,7 +11,7 @@ class DashboardController extends Controller
 {
     // Ambil data workshop dan vehicle dengan join
     $workshops = Workshop::select('workshops.*', 'vehicles.*')
-        ->join('vehicles', 'workshops.vehicle_id', '=', 'vehicles.vehicle_id')
+        ->leftJoin('vehicles', 'workshops.vehicle_id', '=', 'vehicles.vehicle_id')
         ->orderBy('workshops.workshop_name', 'asc')
         ->get();
 

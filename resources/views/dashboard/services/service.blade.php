@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Dashboard')
+@section('page_title', 'Reviltan - Service')
 @section('style')
     <!-- Form step -->
     <link href="{{ asset('assets/vendor/jquery-smartwizard/dist/css/smart_wizard.min.css') }}" rel="stylesheet">
@@ -56,16 +56,16 @@
 use Carbon\Carbon;
 @endphp
 @section('content')
-@if ((empty($userBooking) && empty($transactionData)) || (!$userBooking->isNotEmpty() && empty($transactionData)))
-    <div class="content-body">
+<div class="content-body">
     <div class="container-fluid">
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Home</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Components</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('service') }}">Service</a></li>
             </ol>
         </div>
         <!-- row -->
+        @if ((empty($userBooking) && empty($transactionData)) || (!$userBooking->isNotEmpty() && empty($transactionData)))
         <div class="row">
             <div class="col-xl-12 col-xxl-12">
                 <div class="card">
@@ -280,8 +280,7 @@ use Carbon\Carbon;
                                                                 </div>
                                                                 <div class="modal-body">
                                                                     <div class="table-responsive">
-                                                                        <table id="example3" class="table table-sm mb-4 table-striped display"
-                                                                            style="min-width: 845px">
+                                                                        <table id="example3" class="table table-sm mb-4 table-striped display">
                                                                             <thead>
                                                                                 <tr>
                                                                                     <th>Booking Time</th>
@@ -335,18 +334,7 @@ use Carbon\Carbon;
                 </div>
             </div>
         </div>
-    </div>
-</div>
-{{-- @elseif () --}}
-@elseif (!empty($bookingUnderway) && $bookingUnderway->isNotEmpty())
-<div class="content-body">
-    <div class="container-fluid">
-        <div class="row page-titles">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Service</a></li>
-            </ol>
-        </div>
+        @elseif (!empty($bookingUnderway) && $bookingUnderway->isNotEmpty())
         <div class="row">
             <div class="col-xl-6 col-xxl-12">
                 <div class="card">
@@ -358,18 +346,7 @@ use Carbon\Carbon;
                 </div>
             </div>
         </div>
-    </div>
-</div>
-@elseif (!empty($transactionData))
-<div class="content-body">
-    <div class="container-fluid">
-        <div class="row page-titles">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Service</a></li>
-            </ol>
-        </div>
-        
+        @elseif (!empty($transactionData) && $transactionData->transaction_status != 'Finished' && $transactionData->total != '') 
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -377,201 +354,190 @@ use Carbon\Carbon;
                         <div class="row">
                             <div class="col-lg-4 order-lg-2 mb-4">
                                 <h4 class="d-flex justify-content-between align-items-center mb-3">
-                                    <span class="text-muted">Your cart</span>
-                                    <span class="badge badge-primary badge-pill">3</span>
+                                    <span class="text-muted">Customer Cart</span>
                                 </h4>
                                 <ul class="list-group mb-3">
+                                    @foreach ($detailsData as $data)
                                     <li class="list-group-item d-flex justify-content-between lh-condensed">
+                                        @php
+                                            $itemPrice = $data->price * $data->quantity;
+                                        @endphp
                                         <div>
-                                            <h6 class="my-0">Product name</h6>
-                                            <small class="text-muted">Brief description</small>
+                                            <h6 class="my-0">{{ $data->item_code }}</h6>
+                                            <small class="text-muted">{{ $data->item_name }}</small>
                                         </div>
-                                        <span class="text-muted">$12</span>
+                                        <span>Rp {{ number_format($itemPrice, 0, ',', '.') }} IDR /
+                                            <span class="text-muted">
+                                                {{ $data->quantity }} {{ $data->quantity == 1 ? 'piece' : 'pieces' }}
+                                            </span>
+                                        </span>
                                     </li>
-                                    <li class="list-group-item d-flex justify-content-between lh-condensed">
-                                        <div>
-                                            <h6 class="my-0">Second product</h6>
-                                            <small class="text-muted">Brief description</small>
-                                        </div>
-                                        <span class="text-muted">$8</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between lh-condensed">
-                                        <div>
-                                            <h6 class="my-0">Third item</h6>
-                                            <small class="text-muted">Brief description</small>
-                                        </div>
-                                        <span class="text-muted">$5</span>
-                                    </li>
+                                    @endforeach
+                                    @if ($transactionData->coupon_code != '')
                                     <li class="list-group-item d-flex justify-content-between active">
                                         <div class="text-white">
                                             <h6 class="my-0 text-white">Promo code</h6>
-                                            <small>EXAMPLECODE</small>
+                                            <small>{{ ucwords($coupon->coupon_code) }}</small>
                                         </div>
-                                        <span class="text-white">-$5</span>
+                                        <div class="text-white">
+                                            <span class="text-white d-block">Rp {{ number_format($coupon->price, 0, ',', '.') }} IDR</span>
+                                            @if ($transactionData->payment_method == '')
+                                            <a href="{{ route('service.remove', ['id' => $transactionData->reference_number]) }}" style="float:right">Remove</a>
+                                            @endif
+                                        </div>
                                     </li>
+                                    @endif
                                     <li class="list-group-item d-flex justify-content-between">
-                                        <span>Total (USD)</span>
-                                        <strong>$20</strong>
+                                        <span>Total (IDR)</span>
+                                        @php
+                                            $totalPrice = 0;
+                                            foreach ($detailsData as $data) {
+                                                $totalPrice += $data->price * $data->quantity;
+                                            }
+                                            if ($transactionData->coupon_code != '') {
+                                                $totalPrice = max(0,$totalPrice - $coupon->price);
+                                            }
+                                        @endphp
+                                        <strong>Rp {{ number_format($totalPrice, 0, ',', '.') }} IDR</strong>
                                     </li>
                                 </ul>
-
-                                <form>
+                                @if ($transactionData->payment_method == '')
+                                <form action="{{ route('service.discount') }}" method="POST">
+                                    @csrf
+                                    <input type="hidden" name="reference_number" value="{{ $transactionData->reference_number }}" required>
                                     <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Promo code">
-                                        <button type="submit" class="input-group-text">Redeem</button>
+                                            <input type="text" class="form-control @error('coupon') is-invalid @enderror" name="coupon" placeholder="Promo code" required>
+                                            <button type="submit" class="input-group-text" style="border-bottom-right-radius: 1.25rem;border-top-right-radius: 1.25rem;">Redeem</button>
+                                            @error('coupon')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                            @enderror
+                                    </div>
+                                    <div class="input-group">
                                     </div>
                                 </form>
+                                @endif
                             </div>
                             <div class="col-lg-8 order-lg-1">
-                                <h4 class="mb-3">Billing address</h4>
-                                <form class="needs-validation" novalidate="">
+                                <form action="{{ route('service.store') }}" method="POST" enctype="multipart/form-data">
+                                    @csrf
+                                    <h4 class="mb-3">Customer Billing</h4>
+                                    <input type="hidden" name="total" value="{{ $totalPrice }}" required>
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="firstName" class="form-label">First name</label>
-                                            <input type="text" class="form-control" id="firstName" placeholder="" value="" required="">
-                                            <div class="invalid-feedback">
-                                                Valid first name is required.
-                                            </div>
+                                        <div class="col-md-12 mb-3">
+                                            <label for="reference_number" class="form-label">Reference Number</label>
+                                            <input type="text" class="form-control @error('reference_number') is-invalid @enderror" name="reference_number" id="reference_number" placeholder="Reference Number" value="{{ $transactionData->reference_number }}" required readonly>
+                                            @error('reference_number')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                            @enderror
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="lastName" class="form-label">Last name</label>
-                                            <input type="text" class="form-control" id="lastName" placeholder="" value="" required="">
-                                            <div class="invalid-feedback">
-                                                Valid last name is required.
-                                            </div>
-                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email</span></label>
+                                        <input type="email" class="form-control" name="email" id="email" value="{{ $transactionData->email }}" placeholder="Email" required readonly>
+                                        @error('email')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="customer_name" class="form-label">Customer Name</span></label>
+                                        <input type="text" class="form-control" name="customer_name" id="customer_name" value="{{ $transactionData->customer_name }}" placeholder="Customer Name" required readonly>
+                                        @error('customer_name')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="vehicle_name" class="form-label">Vehicle Name</label>
+                                        <input type="text" class="form-control" name="vehicle_name" id="vehicle_name" value="{{ $transactionData->vehicle_name }}" placeholder="Vehicle Name" required readonly>
+                                        @error('vehicle_name')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
 
                                     <div class="mb-3">
-                                        <label for="username" class="form-label">Username</label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">@</span>
-                                            <input type="text" class="form-control" id="username" placeholder="Username" required="">
-                                            <div class="invalid-feedback" style="width: 100%;">
-                                                Your username is required.
-                                            </div>
-                                        </div>
+                                        <label for="plate_number" class="form-label">Plate Number</span></label>
+                                        <input type="text" class="form-control" name="plate_number" id="plate_number" value="{{ $transactionData->plate_number }}" placeholder="Plate Number" required readonly>
+                                        @error('plate_number')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label for="email" class="form-label">Email <span class="text-muted">(Optional)</span></label>
-                                        <input type="email" class="form-control" id="email" placeholder="you@example.com">
-                                        <div class="invalid-feedback">
-                                            Please enter a valid email address for shipping updates.
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="address" class="form-label">Address</label>
-                                        <input type="text" class="form-control" id="address" placeholder="1234 Main St" required="">
-                                        <div class="invalid-feedback">
-                                            Please enter your shipping address.
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label for="address2" class="form-label">Address 2 <span class="text-muted">(Optional)</span></label>
-                                        <input type="text" class="form-control" id="address2" placeholder="Apartment or suite">
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-5 mb-3">
-                                            <label class="form-label">Country</label>
-                                            <select class="default-select form-control wide w-100">
-                                                <option selected="">Choose...</option>
-                                                <option value="1">United States</option>
-                                            </select>
-                                            <div class="invalid-feedback">
-                                                Please select a valid country.
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-3">
-                                            <label class="form-label">State</label>
-                                            <select class="default-select form-control wide w-100">
-                                                <option selected="">Choose...</option>
-                                                <option>California</option>
-                                            </select>
-                                            <div class="invalid-feedback">
-                                                Please provide a valid state.
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <label for="zip" class="form-label">Zip</label>
-                                            <input type="text" class="form-control" id="zip" placeholder="" required="">
-                                            <div class="invalid-feedback">
-                                                Zip code required.
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <hr class="mb-4">
-                                    <div class="form-check custom-checkbox mb-2">
-                                        <input type="checkbox" class="form-check-input" id="same-address">
-                                        <label class="form-check-label" for="same-address">Shipping address
-                                            is
-                                            the same as
-                                            my billing address</label>
-                                    </div>
-                                    <div class="form-check custom-checkbox mb-2">
-                                        <input type="checkbox" class="form-check-input" id="save-info">
-                                        <label class="form-check-label" for="save-info">Save this
-                                            information
-                                            for next
-                                            time</label>
-                                    </div>
-                                    <hr class="mb-4">
-
                                     <h4 class="mb-3">Payment</h4>
 
                                     <div class="d-block my-3">
                                         <div class="form-check custom-radio mb-2">
-                                            <input id="credit" name="paymentMethod" type="radio" class="form-check-input" checked="" required="">
-                                            <label class="form-check-label" for="credit">Credit card</label>
+                                            <input id="cash" name="payment_method" type="radio" value="Cash" class="form-check-input" required
+                                            @if ($transactionData->payment_method == 'Cash')
+                                                checked
+                                            @endif
+                                            @if ($transactionData->payment_method != '') 
+                                                disabled
+                                            @else
+                                                checked
+                                            @endif
+                                             >
+                                            <label class="form-check-label" for="cash">Cash</label>
                                         </div>
                                         <div class="form-check custom-radio mb-2">
-                                            <input id="debit" name="paymentMethod" type="radio" class="form-check-input" required="">
-                                            <label class="form-check-label" for="debit">Debit card</label>
+                                            <input id="transfer" name="payment_method" type="radio" value="Bank Transfer" class="form-check-input" required
+                                            @if ($transactionData->payment_method == 'Bank Transfer')
+                                                checked
+                                            @endif
+                                            @if ($transactionData->payment_method != '') 
+                                                disabled
+                                            @endif
+                                            >
+                                            <label class="form-check-label" for="transfer">Bank Transfer</label>
                                         </div>
-                                        <div class="form-check custom-radio mb-2">
-                                            <input id="paypal" name="paymentMethod" type="radio" class="form-check-input" required="">
-                                            <label class="form-check-label" for="paypal">Paypal</label>
+                                        @if ($transactionData->payment_method != 'Bank Transfer')
+                                        <div id="cashNotes">
+                                            <div class="mb-2 fs-16">
+                                                <span>Please meet the cashier for verification.</span   >
+                                            </div>
+                                        </div>
+                                        @endif
+                                        <div id="receiptSection" style="display: none;" class="my-3">
+                                            <div class="mb-3 fs-16">
+                                                <div class="mb-2 mt-2">
+                                                    <span><strong class="d-block">Bank Mandiri</strong>1330024781290 - Reviltan Garage</span>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <span><strong class="d-block">Bank BCA</strong>5725680351 - Reviltan Garage</span>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="receipt" class="form-label">Transfer Receipt</label>
+                                                <div class="form-file">
+                                                    <input type="file" class="form-file-input form-control" name="receipt" id="receipt">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
+                                    <hr class="mb-4 mt-4 me-2">
                                     <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="cc-name" class="form-label">Name on card</label>
-                                            <input type="text" class="form-control" id="cc-name" placeholder="" required="">
-                                            <small class="text-muted">Full name as displayed on card</small>
-                                            <div class="invalid-feedback">
-                                                Name on card is required
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="cc-number" class="form-label">Credit card number</label>
-                                            <input type="text" class="form-control" id="cc-number" placeholder="" required="">
-                                            <div class="invalid-feedback">
-                                                Credit card number is required
-                                            </div>
+                                        <div class="col-lg-12">
+                                            @if ($transactionData->payment_method != '' && $transactionData->payment_status == 'Pending')
+                                                <button class="btn btn-warning btn-sm btn-block" type="button" disabled><i class="fas fa-hourglass-half"></i> Wait for Admin Verification</button>
+                                            @elseif ($transactionData->payment_method == '' && $transactionData->payment_status == 'Pending')
+                                                <button class="btn btn-primary btn-sm btn-block" type="submit" name="action" value="proceed"><i class="fas fa-wrench"></i> Proceed Transaction</button>
+                                            @elseif ($transactionData->payment_status == 'Paid')
+                                                <button class="btn btn-success btn-sm btn-block" type="submit" name="action" value="finish"><i class="fas fa-check"></i> Your transaction has been verified, click here to finish the transaction.</button>
+                                                
+                                            @elseif ($transactionData->payment_status == 'Failed')
+                                                <button class="btn btn-danger btn-sm btn-block" type="button" disabled><i class="fas fa-times"></i> Your transaction was not approved, please contact the Administrator!</button>
+                                            @endif
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-3 mb-3">
-                                            <label for="cc-expiration" class="form-label">Expiration</label>
-                                            <input type="text" class="form-control" id="cc-expiration" placeholder="" required="">
-                                            <div class="invalid-feedback">
-                                                Expiration date required
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            <label for="cc-expiration" class="form-label">CVV</label>
-                                            <input type="text" class="form-control" id="cc-cvv" placeholder="" required="">
-                                            <div class="invalid-feedback">
-                                                Security code required
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <hr class="mb-4">
-                                    <button class="btn btn-primary btn-lg btn-block" type="submit">Continue to
-                                        checkout</button>
                                 </form>
                             </div>
                         </div>
@@ -579,17 +545,19 @@ use Carbon\Carbon;
                 </div>
             </div>
         </div>
-    </div>
-</div>
-@else
-<div class="content-body">
-    <div class="container-fluid">
-        <div class="row page-titles">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Service</a></li>
-            </ol>
+        @elseif (!empty($transactionData) && $transactionData->total == '')
+        <div class="row">
+            <div class="col-xl-6 col-xxl-12">
+                <div class="card">
+                    <div class="alert alert-info solid mx-4 mt-4 mb-0"><strong>Attention!</strong> Your transaction is still being processed.</div>                    
+                    <div class="card-header d-block mb-4">
+                        <h4 class="card-title">Processing Your Transaction</h4>
+                        <p class="mb-3 subtitle">Your transaction is currently being processed!</p>                        
+                    </div>
+                </div>
+            </div>
         </div>
+        @else
         <div class="row">
             <div class="col-xl-6 col-xxl-12">
                 <div class="card">
@@ -608,9 +576,9 @@ use Carbon\Carbon;
                 </div>
             </div>
         </div>
+    @endif
     </div>
 </div>
-@endif
 @endsection
 @section('script')
     <!-- Datatable -->
@@ -645,6 +613,25 @@ use Carbon\Carbon;
     <script src="{{ asset('assets/js/plugins-init/material-date-picker-init.js') }}"></script>
     <!-- Pickdate -->
     <script src="{{ asset('assets/js/plugins-init/pickadate-init.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('input[name="payment_method"]').on('change', function() {
+                if ($('#transfer').is(':checked')) {
+                    $('#receiptSection').show();
+                    $('#receipt').attr('required', true);
+                } else {
+                    $('#receiptSection').hide();
+                    $('#receipt').removeAttr('required');
+                }
+
+                if($('#cash').is(':checked')) {
+                    $('#cashNotes').show();
+                } else {
+                    $('#cashNotes').hide();
+                }
+            });
+        });
+    </script>
     <script>
    $(document).ready(function() {
         $(document).on('click', '.sweet-submit', function(e) {

@@ -7,6 +7,6 @@ use Illuminate\Http\Request;
 class HistoryController extends Controller
 {
     public function view () {
-        return view('dashboard.history');
+        return view('dashboard.histories.history');
     }
 }

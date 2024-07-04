@@ -22,7 +22,9 @@ class WorkshopController extends Controller
 
 
         $fetchWorkshops = Workshop::get();
-        $fetchVehicles = Vehicle::get();
+        $fetchVehicles = Vehicle::join('bookings', 'bookings.vehicle_id', '=', 'vehicles.vehicle_id')
+        ->where('bookings.status', 'Reserved')
+        ->get();
 
         return view('dashboard.workshops.workshop', compact('workshops', 'fetchWorkshops', 'fetchVehicles'));
     }
@@ -65,20 +67,48 @@ class WorkshopController extends Controller
         return redirect()->route('workshop')->with($notification);
     }
 
-    public function underway ($id) {
-        $workshop = Workshop::findOrFail($id);
+    public function update(Request $request) {
+    // Validate the request data
+    $request->validate([
+        'workshop_id' => 'required|exists:workshops,workshop_id',
+        'status' => 'required|string',
+        'vehicle' => 'required|exists:vehicles,vehicle_id', // Assuming vehicles table has vehicle_id column
+    ]);
 
-        $workshop->update([
-            'status' => 'Underway' 
-        ]);
+    // Retrieve the workshop entry
+    $workshop = Workshop::find($request->workshop_id);
 
-        $notification = [
-            'message' => 'Status workshop has been updated',
-            'alert-type' => 'success',
-        ];
+    // Ensure the workshop entry exists
+    if ($workshop) {
+        // Retrieve the booking entry with the given vehicle_id and status 'Reserved'
+        $booking = Booking::where('vehicle_id', $request->vehicle)
+                          ->where('status', 'Reserved')
+                          ->first();
 
-        return redirect()->route('workshop')->with($notification);
+        // Ensure the booking entry exists
+        if ($booking) {
+            // Update the workshop entry
+            $workshop->status = $request->status;
+            $workshop->vehicle_id = $request->vehicle;
+            $workshop->booking_id = $booking->booking_id;
+            $workshop->save();
+
+            // Set success notification
+            $notification = [
+                'message' => 'Workshop has been successfully updated',
+                'alert-type' => 'success',
+            ];
+
+            return redirect()->route('workshop')->with($notification);
+        } else {
+            // Set error notification for missing booking
+            return redirect()->back()->withErrors(['vehicle' => 'No booking found for the specified vehicle with status Reserved.']);
+        }
+    } else {
+        // Set error notification for missing workshop
+        return redirect()->back()->withErrors(['workshop_id' => 'Workshop not found.']);
     }
+}
 
     public function updateStatus(Request $request, $id)
     {
@@ -112,6 +142,7 @@ class WorkshopController extends Controller
                     $transaction = Transaction::create([
                         'reference_number' => Str::random(15),
                         'booking_id' => $booking->booking_id,
+                        'vehicle_id' => $booking->vehicle_id,
                         'customer_id' => $booking->customer_id
                     ]);
     
@@ -147,10 +178,30 @@ class WorkshopController extends Controller
                 ];
             }
         } else {
-            $notification = [
-                'message' => 'Status Workshop has been successfully updated',
-                'alert-type' => 'success',
-            ];
+            $booking = Booking::where('booking_id', $workshop->booking_id)
+            ->where('status', '=', 'Reserved')
+            ->first();
+
+            if ($booking) {
+                $booking->status = 'Canceled';
+                $booking->save();
+
+                // Cari workshop berdasarkan ID
+                $workshop = Workshop::findOrFail($id);
+                if ($workshop) {
+                    $workshop->update([
+                        'vehicle_id' => null,
+                        'booking_id' => null,
+                        'status' => 'Postponed',
+                    ]);
+
+                    $notification = [
+                        'message' => 'Status Workshop has been successfully updated',
+                        'alert-type' => 'success',
+                    ];
+                }
+
+            }
         }
 
         // Redirect dengan pesan notifikasi

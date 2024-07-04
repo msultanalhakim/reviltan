@@ -13,7 +13,7 @@
     <title>@yield('page_title')</title>
 
     <!-- Favicons Icon -->
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/images/favicon.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/owl-carousel/owl.carousel.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/nouislider/nouislider.min.css') }}">
     <link href="{{ asset('assets/vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
@@ -53,7 +53,6 @@
     <script src="{{ asset('assets/vendor/jquery-nice-select/js/jquery.nice-select.min.js') }}"></script>
 
     <script src="{{ asset('assets/vendor/global/global.min.js') }}"></script>
-    <script src="{{ asset('assets/vendor/chart.js/Chart.bundle.min.js') }}"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
          @if(Session::has('message'))
@@ -84,7 +83,41 @@
     {{-- <script src="{{ asset('assets/vendor/sweetalert2/dist/sweetalert2.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins-init/sweetalert.init.js') }}"></script> --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.11.1/dist/sweetalert2.all.min.js
-    "></script>    
+    "></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.querySelector("form");
+            const submitButton = document.getElementById("submit-button");
+    
+            form.addEventListener("submit", function(event) {
+                // Disable the submit button to prevent multiple clicks
+                submitButton.disabled = true;
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mendapatkan URL saat ini
+            var currentUrl = window.location.href;
+    
+            // Mendapatkan elemen sidebar yang ingin diaktifkan
+            var serviceSidebarItem = document.getElementById('service-sidebar-item-service');
+    
+            // Daftar fragmen yang ingin diperiksa untuk mengaktifkan sidebar
+            var fragments = ['#wizard_Service', '#wizard_Time', '#wizard_Details'];
+    
+            // Periksa apakah URL saat ini mengandung salah satu fragmen yang diinginkan
+            var isActive = fragments.some(function(fragment) {
+                return currentUrl.indexOf(fragment) !== -1;
+            });
+    
+            // Jika salah satu fragmen ditemukan, tambahkan kelas 'active' ke elemen sidebar
+            if (isActive) {
+                serviceSidebarItem.classList.add('mm-active');
+            }
+        });
+    </script>
+    
     <!-- Script to handle SweetAlert2 confirmation -->
     <script>
         $(document).ready(function() {
@@ -112,18 +145,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             var currentUrl = window.location.href;
             var serviceSidebarItem = document.getElementById('service-sidebar-item');
-    
-            console.log("Current URL:", currentUrl);
-            console.log("Service route:", "{{ route('service') }}");
-    
+
             if (currentUrl.includes('{{ route('service') }}#WizardService') || 
                 currentUrl.includes('{{ route('service') }}#WizardTime') || 
                 currentUrl.includes('{{ route('service') }}#WizardDetails') || 
                 currentUrl === "{{ route('service') }}") {
-                console.log("Adding active class to service sidebar item.");
                 serviceSidebarItem.classList.add('active');
             } else {
-                console.log("Conditions not met, active class not added.");
             }
         });
     </script>

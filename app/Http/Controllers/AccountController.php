@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Rules\UniqueEmailInUsersAndCustomers;
 use App\Models\User;
 use App\Models\Customer;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Auth\Events\Registered;
+use App\Rules\UniqueEmailInUsersAndCustomers;
 
 class AccountController extends Controller
 {
@@ -21,6 +22,12 @@ class AccountController extends Controller
 
     public function create () {
         return view ('dashboard.accounts.account_add');
+    }
+
+    public function update ($id) {
+        $account = User::findOrFail($id);
+
+        return view ('dashboard.accounts.account_edit', compact('account'));
     }
 
     public function store (Request $request) {
@@ -55,5 +62,35 @@ class AccountController extends Controller
             event(new Registered($user));
         
             return redirect(route('dashboard.users.user', absolute: false));
+    }
+
+    public function updateStore (Request $request) {
+        $account = User::findOrFail($request->id);
+
+        $request->validate([
+            'username' => [
+                        'required',
+                        'string',
+                        'max:255',
+                        Rule::unique('users')->ignore($account->id), // Ignore the current user's ID
+                    ],
+            'role' => 'required',
+            'status' => 'required'
+        ]);
+
+
+        if ($account) {
+            $account->username = $request->username;
+            $account->role = $request->role;
+            $account->status = $request->status;
+            $account->save();
+
+            $notification = array(
+                'message' => 'Account has been successfully updated',
+                'alert-type' => 'success',
+            );
+
+            return redirect()->route('account')->with($notification);
         }
+    }
 }

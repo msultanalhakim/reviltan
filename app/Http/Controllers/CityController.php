@@ -25,6 +25,15 @@ class CityController extends Controller
         return view ('dashboard.cities.city_add', compact('provinces'));
     }
 
+    public function update ($id) {
+        $city = City::join('provinces', 'provinces.province_id', '=', 'cities.province_id')
+        ->findOrFail($id);
+
+        $provinces = Province::all();
+
+        return view ('dashboard.cities.city_edit', compact('city', 'provinces'));
+    }
+
     public function store (Request $request) {
         $request->validate([
             'city_name' => 'required|max:40',
@@ -36,6 +45,49 @@ class CityController extends Controller
             'province_id' => $request->province_id 
         ]);
 
-        return redirect()->route('city');
+        $notification = [
+            'message' => 'City has been successfully added',
+            'alert-type' => 'success',
+        ];
+
+        return redirect()->route('city')->with($notification);
+    }
+
+    public function updateStore (Request $request) {
+        $request->validate([
+            'city_name' => 'required|max:40',
+            'province_id' => 'required'
+        ]);
+
+        $city = City::findOrFail($request->city_id);
+
+        if ($city) {
+            $city->city_name = $request->city_name;
+            $city->province_id = $request->province_id;
+            $city->save();
+
+            $notification = [
+                'message' => 'City has been successfully updated',
+                'alert-type' => 'success',
+            ];
+        } else {
+            $notification = [
+                'message' => 'City has been failed to update',
+                'alert-type' => 'error',
+            ];
+        }
+
+        return redirect()->route('city')->with($notification);
+    }
+
+    public function destroy ($id) {
+        City::findOrFail($id)->delete();
+
+        $notification = [
+            'message' => 'City has been successfully delete',
+            'alert-type' => 'success'
+        ];
+
+        return redirect()->route('city')->with($notification);
     }
 }

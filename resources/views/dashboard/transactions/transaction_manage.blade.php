@@ -5,8 +5,8 @@
     <div class="container-fluid">
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="{{ route('transaction') }}">Transaction</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Manage</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('transaction') }}">Transactions</a></li>
+                <li class="breadcrumb-item"><a href="" onclick="location.reload(); return false;">Manage</a></li>
             </ol>
         </div>
         
@@ -122,13 +122,17 @@
                                         </span>
                                     </li>
                                     @endforeach
-                                    {{-- <li class="list-group-item d-flex justify-content-between active">
+                                    @if ($transactionData->coupon_code != '')
+                                    <li class="list-group-item d-flex justify-content-between active">
                                         <div class="text-white">
                                             <h6 class="my-0 text-white">Promo code</h6>
-                                            <small>EXAMPLECODE</small>
+                                            <small>{{ ucwords($coupon->coupon_code) }}</small>
                                         </div>
-                                        <span class="text-white">-$5</span>
-                                    </li> --}}
+                                        <div class="text-white">
+                                            <span class="text-white d-block">Rp {{ number_format($coupon->price, 0, ',', '.') }} IDR</span>
+                                        </div>
+                                    </li>
+                                    @endif
                                     <li class="list-group-item d-flex justify-content-between">
                                         <span>Total (IDR)</span>
                                         @php
@@ -136,22 +140,18 @@
                                             foreach ($detailsData as $data) {
                                                 $totalPrice += $data->price * $data->quantity;
                                             }
+                                            if ($transactionData->coupon_code != '') {
+                                                $totalPrice = max(0,$totalPrice - $coupon->price);
+                                            }
                                         @endphp
                                         <strong>Rp {{ number_format($totalPrice, 0, ',', '.') }} IDR</strong>
                                     </li>
                                 </ul>
-
-                                    {{-- <form>
-                                        <div class="input-group">
-                                            <input type="text" class="form-control" placeholder="Promo code">
-                                            <button type="submit" class="input-group-text">Redeem</button>
-                                        </div>
-                                    </form> --}}
                             </div>
                             <div class="col-lg-8 order-lg-1">
                                 <form action="{{ route('transaction.manage.store') }}" method="POST" enctype="multipart/form-data">
                                     @csrf
-                                    <h4 class="mb-3">Customer Billing</h4>
+                                    <h4 class="mb-3"><a href="{{ route('transaction') }}"><i class="fas fa-back"></i></a>Customer Billing</h4>
                                     <input type="hidden" name="total" value="{{ $totalPrice }}" required>
                                     <div class="row">
                                         <div class="col-md-12 mb-3">
@@ -208,68 +208,80 @@
                                         </div>
                                     </div>
 
-
-                                    @if($transactionData->payment_method == 'Bank Transfer')
+                                    @if ($transactionData->payment_method != '')
                                     <div class="mb-3">
-                                        <label for="plate_number" class="form-label">Transfer Receipt</span></label>
-                                        <input type="text" class="form-control" name="plate_number" id="plate_number" value="{{ $transactionData->plate_number }}" placeholder="Plate Number" required disabled>
-                                        @error('plate_number')
+                                        <label for="payment_method" class="form-label">Payment Method</span></label>
+                                        <input type="text" class="form-control" name="payment_method" id="payment_method" value="{{ $transactionData->payment_method }}" placeholder="Payment Method" required readonly>
+                                        @error('payment_method')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
                                             </span>
                                         @enderror
                                     </div>
                                     @endif
-                                    {{-- <h4 class="mb-3">Payment</h4>
 
-                                    <div class="d-block my-3">
-                                        <div class="form-check custom-radio mb-2">
-                                            <input id="credit" name="paymentMethod" type="radio" class="form-check-input" checked="" required="">
-                                            <label class="form-check-label" for="credit">Credit card</label>
+                                    @if($transactionData->payment_method == 'Bank Transfer')
+                                    <div class="mb-3">
+                                        <label for="plate_number" class="form-label">Transfer Receipt</span></label>
+                                        <div class="mb-3 col-md-12">
+                                            <img id="showImage" src="{{ url(asset('assets/img/receipt/'.$transactionData->file)) }}"
+                                                alt="Photo Users" class="img-fluid mt-4 mb-4"
+                                                style="width: 300px; object-fit: cover;">
                                         </div>
-                                        <div class="form-check custom-radio mb-2">
-                                            <input id="debit" name="paymentMethod" type="radio" class="form-check-input" required="">
-                                            <label class="form-check-label" for="debit">Debit card</label>
-                                        </div>
-                                        <div class="form-check custom-radio mb-2">
-                                            <input id="paypal" name="paymentMethod" type="radio" class="form-check-input" required="">
-                                            <label class="form-check-label" for="paypal">Paypal</label>
-                                        </div>
-                                    </div> --}}
-                                    @if ($transactionData->payment_status == 'Pending' && $transactionData->payment_method == 'Bank Transfer')
+                                    </div>
+                                    @endif
+
+                                    @if ($transactionData->payment_status == 'Pending' && $transactionData->payment_method == 'Bank Transfer' && $transactionData->transaction_status == '')
                                         <hr class="mb-4 mt-4 me-2">
                                         <div class="row">
                                             <div class="col-lg-6">
-                                                <button class="btn btn-success btn-sm btn-block" type="submit" name="action" value="approve">Approve <i class="fas fa-check"></i></button>
+                                                <button class="btn btn-success btn-sm btn-block" type="submit" name="action" value="approve"><i class="fas fa-check"></i> Approve</button>
                                             </div>
                                             <div class="col-lg-6">
-                                                <button class="btn btn-danger btn-sm btn-block" type="submit" name="action" value="reject">Reject <i class="fas fa-times"></i></button>
+                                                <button class="btn btn-danger btn-sm btn-block" type="submit" name="action" value="reject"><i class="fas fa-times"></i> Reject</button>
                                             </div>
                                         </div> 
-                                    @elseif ($transactionData->payment_status == 'Pending' && $transactionData->payment_method == 'Cash')
+                                    @elseif ($transactionData->payment_status == 'Pending' && $transactionData->payment_method == 'Cash' && $transactionData->transaction_status == '')
                                         <hr class="mb-4 mt-4 me-2">
                                         <div class="row">
                                             <div class="col-lg-6">
-                                                <button class="btn btn-success btn-sm btn-block" type="submit" name="action" value="approve">Approve <i class="fas fa-check"></i></button>
+                                                <button class="btn btn-success btn-sm btn-block" type="submit" name="action" value="approve"><i class="fas fa-check"></i> Approve</button>
                                             </div>
                                             <div class="col-lg-6">
-                                                <button class="btn btn-danger btn-sm btn-block" type="submit" name="action" value="approve">Reject <i class="fas fa-times"></i></button>
+                                                <button class="btn btn-danger btn-sm btn-block" type="submit" name="action" value="reject"><i class="fas fa-times"></i> Reject</button>
                                             </div>
                                         </div> 
-                                    @elseif ($transactionData->payment_status == 'Pending' && $transactionData->total != '')
+                                    @elseif ($transactionData->payment_status == 'Pending' && $transactionData->total != '' && $transactionData->transaction_status == '')
                                         <hr class="mb-4 mt-4 me-2">
                                         <div class="row">
                                             <div class="col-lg-12">
-                                                <button class="btn btn-warning btn-sm btn-block" type="submit" name="action" value="proceed" disabled>Wait for Customer Verification <i class="fas fa-hourglass-half"></i></button>
+                                                <button class="btn btn-warning btn-sm btn-block" type="button" disabled><i class="fas fa-hourglass-half"></i> Wait for Customer Verification</button>
                                             </div>
                                         </div>
-                                    @else 
+                                    @elseif ($transactionData->total == '' && $transactionData->payment_status == 'Pending' && $transactionData->transaction_status == '')
                                         <hr class="mb-4 mt-4 me-2">
                                         <div class="row">
                                             <div class="col-lg-12">
-                                                <button class="btn btn-primary btn-sm btn-block" type="submit" name="action" value="proceed">Proceed Transaction <i class="fas fa-wrench"></i></button>
+                                                <button class="btn btn-primary btn-sm btn-block" type="submit" name="action" value="proceed"><i class="fas fa-wrench"></i> Proceed Transaction</button>
                                             </div>
                                         </div>
+                                    @elseif ($transactionData->payment_status == 'Failed' && $transactionData->transaction_status == '')
+                                        <hr class="mb-4 mt-4 me-2">
+                                        <div class="row">
+                                            <div class="col-lg-9">
+                                                <button class="btn btn-danger btn-sm btn-block" type="submit" name="action" value="finish"><i class="fas fa-times"></i> Complete the failed transaction</button>
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <button class="btn btn-success btn-sm btn-block" type="submit" name="action" value="paid"><i class="fas fa-check"></i> Paid</button>
+                                            </div>
+                                        </div>
+                                    @elseif ($transactionData->payment_status == 'Failed' && $transactionData->transaction_status == 'Failed')
+                                        <hr class="mb-4 mt-4 me-2">
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <button class="btn btn-danger btn-sm btn-block" type="button" disabled><i class="fas fa-times"></i> Transaction has been failed</button>
+                                            </div>
+                                        </div>                                 
                                     @endif
                                 </form>
                             </div>

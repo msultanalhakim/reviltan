@@ -5,14 +5,18 @@
     <div class="container-fluid">
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Shop</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Product Order</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('transaction') }}">Transactions</a></li>
             </ol>
         </div>
         
         <div class="row">
             <div class="col-lg-12">
                 <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">Transactions</h4>
+                        <a href="{{ route('transaction.add') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i></a>
+                    </div>
                     <div class="card-body">
                         <div class="table-responsive">
                             <table id="example3" class="table table-sm mb-0">
@@ -23,7 +27,7 @@
                                         <th class="align-middle">Date</th>
                                         <th class="align-middle">Customers Name</th>
                                         <th class="align-middle">Vehicles Name</th>
-                                        <th class="align-middle">Plate Number</th>
+                                        <th class="align-middle">Custs Confirm</th>
                                         <th class="align-middle">Status</th>
                                         <th class="no-sort"></th>
                                     </tr>
@@ -36,7 +40,13 @@
                                         <td class="py-2">{{ $data->created_at->format('d-m-Y') }}</td>
                                         <td class="py-2">{{ $data->customer_name }}</td>
                                         <td class="py-2">{{ $data->vehicle_name }}</td>
-                                        <td class="py-2">{{ $data->plate_number }}</td>
+                                        <td class="py-2">
+                                            @if ($data->payment_method != '')
+                                                Confirmed
+                                            @else
+                                                Unconfirmed
+                                            @endif
+                                        </td>
                                         <td class="py-2">
                                             @if ($data->payment_status == 'Failed')
                                             <span class="badge badge-danger">Failed<span class="ms-1 fa fa-ban"></span></span>
@@ -52,10 +62,10 @@
 
                                                 <div class="dropdown-menu dropdown-menu-end border py-0" aria-labelledby="order-dropdown-0">
                                                     <div class="py-2">
-                                                        @if ($data->payment_status == 'Pending')
                                                         <a class="dropdown-item" href="{{ route('transaction.manage', ['id' => $data->reference_number]) }}">Manage</a>
-                                                        @endif
+                                                        @if ($data->payment_status == 'Pending' && $data->total == '')
                                                         <div class="dropdown-divider"></div><a class="dropdown-item text-danger" href="{{ route('transaction.delete', ['id' => $data->reference_number]) }}">Delete</a>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </div>

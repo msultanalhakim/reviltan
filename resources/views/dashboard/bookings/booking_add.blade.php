@@ -54,15 +54,55 @@
 
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Shop</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Customers</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('booking') }}">Bookings</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('booking.add') }}">Add</a></li>
             </ol>
         </div>
         <div class="row">
             <div class="col-xl-8 col-lg-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title">Add Booking</h4>
+                    <div class="card-header pb-0">
+                        <div class="row">
+                            <div class="col-md-12 mb-2">
+                                <h4 class="card-title"><a href="{{ route('booking') }}"><i class="fas fa-arrow-left"></i></a> Add Booking</h4>
+                            </div>
+                            <div class="col-md-12 mb-0">
+                                <button type="button" class="btn btn-sm btn-primary mb-2" data-bs-toggle="modal" data-bs-target=".bd-example-modal-lg"><i class="fas fa-calendar"></i> Schedules</button>
+                                <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Schedules</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal">
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="table-responsive">
+                                                    <table id="example3" class="table table-sm mb-4 table-striped display">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Booking Time</th>
+                                                                <th>Booking Date</th>
+                                                                <th>Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($formattedBookingData as $booking)
+                                                            <tr>
+                                                                <td>{{ $booking['booking_time'] }}</td>
+                                                                <td>{{ $booking['booking_date'] }}</td>
+                                                                <td>{{ $booking['status'] }}</td>
+                                                            </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="basic-form">
@@ -72,7 +112,7 @@
                                     <div class="col-md-6 col-xl-6 col-xxl-6 mb-3">
                                         <label class="form-label">Time</label>
                                         <div class="input-group clockpicker">
-                                            <input type="text" class="form-control @error('time') is-invalid @enderror" name="time" placeholder="00:00" {{ old('time') }}>
+                                            <input type="text" class="form-control @error('time') is-invalid @enderror" name="time" placeholder="00:00" value="{{ old('time') }}" required>
                                             <span class="input-group-text"><i class="far fa-clock"></i></span>
                                             @error('time')
                                             <span class="invalid-feedback" role="alert">
@@ -83,24 +123,36 @@
                                     </div>
                                     <div class="col-md-6 col-xl-6 col-xxl-6 mb-3">
                                         <label class="form-label">Date</label>
-                                        <input type="text" class="datepicker-default form-control @error('date') is-invalid @enderror" name="date" id="datepicker" placeholder="00 January, 1900" value="{{ old('date') }}">
+                                        <input type="text" class="datepicker-default form-control @error('date') is-invalid @enderror" name="date" id="datepicker" placeholder="00 January, 1900" value="{{ old('date') }}" required>
                                         @error('date')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>
                                         </span>
                                         @enderror
-                                    </div>
-                                                                
-                                    <div class="mb-4 col-md-6">
-                                        <label>Customer</label>
+                                    </div>                       
+                                    <div class="mb-4 col-md-12">
+                                        <label>Customer Name</label>
                                         <div class="basic-form">
-                                            <select class="@error('customer_id') is-invalid @enderror" name="customer_id" id="single-select" style="border:0.5rem solid #fff">
+                                            <select class="py-2 @error('customer') is-invalid @enderror" name="customer" id="single-select" value="{{ old('customer') }}" style="border:0.5rem solid #fff" required>
                                                 <option value="">Select Customer</option>
                                                 @foreach ($customers as $customer)
                                                 <option value="{{ $customer->customer_id }}">{{ $customer->email }}</option>
                                                 @endforeach
                                             </select>
-                                            @error('customer_id')
+                                            @error('customer')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 col-md-12">
+                                        <label>Vehicle Name</label>
+                                        <div class="basic-form">
+                                            <select class="form-control wide mb-3 @error('vehicle') is-invalid @enderror" name="vehicle" id="vehicle-dropdown" required>
+                                                <option value="">Select Vehicle</option>
+                                            </select>
+                                            @error('vehicle')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
                                             </span>
@@ -108,7 +160,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-sm">Insert</button>
+                                <button type="submit" class="btn btn-primary btn-sm" class="submit-button">Insert</button>
                             </form>
                         </div>
                     </div>
@@ -122,30 +174,39 @@
 <script src="{{ asset('assets/vendor/jquery-nice-select/js/jquery.nice-select.min.js') }}"></script>
 <script src="{{ asset('assets/vendor/select2/js/select2.full.min.js') }}"></script>
 <script src="{{ asset('assets/js/plugins-init/select2-init.js') }}"></script>
-<!-- Daterangepicker -->
-<!-- momment js is must -->
-<script src="{{ asset('assets/vendor/moment/moment.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
 <!-- clockpicker -->
 <script src="{{ asset('assets/vendor/clockpicker/js/bootstrap-clockpicker.min.js') }}"></script>
-<!-- asColorPicker -->
-<script src="{{ asset('assets/vendor/jquery-asColor/jquery-asColor.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/jquery-asGradient/jquery-asGradient.min.js') }}"></script>
-<script src="{{ asset('assets/vendor/jquery-asColorPicker/js/jquery-asColorPicker.min.js') }}"></script>
-<!-- Material color picker -->
-<script src="{{ asset('assets/vendor/bootstrap-material-datetimepicker/js/bootstrap-material-datetimepicker.js') }}"></script>
 <!-- pickdate -->
 <script src="{{ asset('assets/vendor/pickadate/picker.js') }}"></script>
-<script src="{{ asset('assets/vendor/pickadate/picker.time.js') }}"></script>
 <script src="{{ asset('assets/vendor/pickadate/picker.date.js') }}"></script>
-<!-- Daterangepicker -->
-<script src="{{ asset('assets/js/plugins-init/bs-daterange-picker-init.js') }}"></script>
 <!-- Clockpicker init -->
 <script src="{{ asset('assets/js/plugins-init/clock-picker-init.js') }}"></script>
-<!-- asColorPicker init -->
-<script src="{{ asset('assets/js/plugins-init/jquery-asColorPicker.init.js') }}"></script>
-<!-- Material color picker init -->
-<script src="{{ asset('assets/js/plugins-init/material-date-picker-init.js') }}"></script>
 <!-- Pickdate -->
 <script src="{{ asset('assets/js/plugins-init/pickadate-init.js') }}"></script>
+<script>
+$(document).ready(function () {
+    $('#single-select').on('change', function () {
+        var idCustomer = this.value;
+        $("#vehicle-dropdown").html('');
+        $.ajax({
+            url: "{{url('api/fetch-customers')}}",
+            type: "POST",
+            data: {
+                customer_id: idCustomer,
+                _token: '{{csrf_token()}}'
+            },
+            dataType: 'json',
+            success: function (result) {
+                if (result.vehicles && result.vehicles.length > 0) {
+                    $.each(result.vehicles, function (key, value) {
+                        $("#vehicle-dropdown").append('<option value="' + value.vehicle_id + '">' + value.vehicle_name + '</option>');
+                    });
+                } else {
+                    $("#vehicle-dropdown").append('<option value="">No available data vehicles</option>');
+                }
+            },
+        });
+    });
+});
+</script>
 @endsection

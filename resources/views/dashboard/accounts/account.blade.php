@@ -7,15 +7,15 @@
         <div class="row page-titles">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item active"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('account') }}">Account</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('account') }}">Accounts</a></li>
             </ol>
         </div>
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Cities</h4><br>
-                        <a href="{{ route('account.add') }}" class="btn btn-primary btn-sm">Add</a>
+                        <h4 class="card-title">Accounts</h4><br>
+                        <a href="{{ route('account.add') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i></a>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -39,10 +39,10 @@
                                         <td>{{ $account->email }}</td>
                                         <td>{{ $account->role }}</td>
                                         <td>{{ $account->status }}</td>
-                                        <td>
+                                        <td>    
                                             <div class="d-flex">
-                                                <a href="#" class="btn btn-primary shadow btn-xs sharp me-1"><i class="fas fa-pencil-alt"></i></a>
-                                                <a href="#" class="btn btn-danger shadow btn-xs sharp"><i class="fa fa-trash"></i></a>
+                                                <a href="{{ route('account.update', ['id' => $account->id]) }}" class="btn btn-primary shadow btn-xs sharp me-1"><i class="fas fa-pencil-alt"></i></a>
+                                                <a href="" class="btn btn-danger shadow btn-xs sharp sweet-destroy" data-id="{{ $account->id }}"><i class="fa fa-trash"></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -62,4 +62,27 @@
     <!-- Datatable -->
     <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('.sweet-destroy').on('click', function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                var userId = $(this).data('id');
+    
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'error',
+                    showCancelButton: true,
+                    confirmButtonClass: 'btn btn-primary',
+                    cancelButtonClass: 'btn btn-danger',
+                    confirmButtonText: 'Delete',
+                    cancelButtonText: 'Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{{ url('account/destroy') }}/" + userId; // Redirect to destroy route
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

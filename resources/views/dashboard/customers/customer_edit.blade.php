@@ -6,54 +6,119 @@
 
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Shop</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Customers</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('customer') }}">Customers</a>
+                </li>
+                <li class="breadcrumb-item"><a href="" onclick="location.reload(); return false;">Update</a></li>
             </ol>
         </div>
         <div class="row">
-            <div class="col-12">
+            <div class="col-xl-8 col-lg-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Profile Datatable</h4><br>
-                        <a href="{{ route('customer.add') }}" class="btn btn-primary btn-sm">Add</a>
+                        <h4 class="card-title"><a href="{{ route('customer') }}"><i class="fas fa-arrow-left"></i></a> Update Customer</h4>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table id="example3" class="table table-sm mb-4 table-striped display"
-                                style="min-width: 845px">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Customers Name</th>
-                                        <th>Email</th>
-                                        <th>Phone</th>
-                                        <th>Address</th>
-                                        <th>City</th>
-                                        <th>Province</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Administrator</td>
-                                        <td>administrator@mail.com</td>
-                                        <td>082113155212</td>
-                                        <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Sed reiciendis
-                                            ipsam.!</td>
-                                        <td>Bogor</td>
-                                        <td>East Java</td>
-                                        <td>
-                                            <div class="d-flex">
-                                                <a href="#" class="btn btn-primary shadow btn-xs sharp me-1"><i
-                                                        class="fas fa-pencil-alt"></i></a>
-                                                <a href="#" class="btn btn-danger shadow btn-xs sharp"><i
-                                                        class="fa fa-trash"></i></a>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="basic-form">
+                            <form method="POST" action="{{ route('customer.update.store') }}" enctype="multipart/form-data">
+                                @csrf
+                                <div class="row mb-2">
+                                    <input type="hidden" name="customer_id" value="{{ $customer->customer_id }}"required>
+                                    <div class="mb-3 col-md-12">
+                                        <label class="form-label">Customer Name</label>
+                                        <input type="text"
+                                            class="form-control @error('customer_name') is-invalid @enderror"
+                                            name="customer_name" value="{{ $customer->customer_name }}"
+                                            placeholder="Customer Name">
+                                        @error('customer_name')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3 col-md-12">
+                                        <label class="form-label">Email</label>
+                                        <input type="email"
+                                            class="form-control @error('email') is-invalid @enderror"
+                                            name="email" value="{{ $customer->email }}"
+                                            placeholder="Email" required>
+                                        @error('email')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3 col-md-12">
+                                        <label class="form-label">Phone</label>
+                                        <input type="number"
+                                            class="form-control @error('phone') is-invalid @enderror"
+                                            name="phone" value="{{ $customer->phone }}"
+                                            placeholder="Phone">
+                                        @error('phone')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
+                                    </div>
+                                    <div class="mb-3 col-md-12">
+                                        <label class="form-label" for="address">Address</label>
+                                        <textarea class="form-control @error('address') is-invalid @enderror" rows="4" id="address" name="address"
+                                            style="min-height: 180px;"
+                                            placeholder="Address">{{ $customer->address ?? old('address') }}</textarea>
+                                            @error('address')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                    </div>
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label" for="province-dropdown">Province</label>
+                                        <div class="basic-form">
+                                            <select class="form-control wide mb-3 @error('province') is-invalid @enderror" id="province-dropdown" name="province">
+                                                <option value="{{ $customer->province_id ?? old('province_id') }}" selected>{{ $customer->province_name ?? 'Select Province' }}</option>
+                                                @foreach ($provinces as $data)
+                                                <option value="{{$data->province_id}}">
+                                                    {{$data->province_name}}
+                                                </option>
+                                                @endforeach
+                                            </select>
+                                            @error('province')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label" for="city-dropdown">City</label>
+                                        <div class="basic-form">
+                                            <select class="form-control wide mb-3 @error('city') is-invalid @enderror" id="city-dropdown" name="city">
+                                                <option value="{{ $customer->city_id ?? old('city_id') }}" selected>{{ $customer->city_name ?? 'Select City' }}</option>
+                                            </select>
+                                            @error('city')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 col-md-12">
+                                        <img id="showImage" src="{{ (!empty($customer->photo) ? url(asset('assets/img/profile/'.$customer->photo)) : url(asset('assets/img/profile/users_default.png'))) }}"
+                                            alt="Photo Users" class="img-fluid mt-4 mb-4 rounded-circle"
+                                            style="width: 216px; height: 216px; object-fit: cover;">
+                                    </div>
+                                    <div class="mb-3 col-md-12">
+                                        <label class="form-label" for="uploadImage">Photo</label>
+                                        <div class="form-file">
+                                            <input type="file" class="form-file-input form-control @error('photo') is-invalid @enderror" name="photo" id="uploadImage">
+                                            @error('photo')
+                                                <span class="invalid-feedback" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary btn-sm" id="submit-button">Update</button>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -61,4 +126,36 @@
         </div>
     </div>
 </div>
+@endsection
+@section('script')
+<script src="{{ asset('assets/vendor/jquery-nice-select/js/jquery.nice-select.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/select2/js/select2.full.min.js') }}"></script>
+<script src="{{ asset('assets/js/plugins-init/select2-init.js') }}"></script>
+<script>
+    $(document).ready(function () {
+    $('#province-dropdown').on('change', function () {
+        var idProvince = this.value;
+        $("#city-dropdown").html('');
+        $.ajax({
+            url: "{{url('api/fetch-city')}}",
+            type: "POST",
+            data: {
+                province_id: idProvince,
+                _token: '{{csrf_token()}}'
+            },
+            dataType: 'json',
+            success: function (result) {
+                $.each(result.cities, function (key, value) {
+                    $("#city-dropdown").append('<option value="' + value
+                        .city_id + '">' + value.city_name + '</option>');
+                });
+            }
+        });
+    });
+
+    $('#uploadImage').on('change', function(e){
+        $('#showImage').attr('src', URL.createObjectURL(e.target.files[0]));
+    });
+});
+</script>
 @endsection

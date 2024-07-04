@@ -45,7 +45,7 @@
                             <form method="POST" action="{{ route('profile.store_password') }}" enctype="multipart/form-data">
                                 @csrf
                                 <div class="row">
-                                    <div class="mb-3 col-md-6">
+                                    <div class="mb-3 col-md-12">
                                         <label class="form-label" for="old_password">Old Password</label>
                                         <input type="password" class="form-control @error('name') is-invalid @enderror" name="old_password" id="old_password" placeholder="Old Password">
                                             @error('old_password')
@@ -56,25 +56,25 @@
                                     </div>
                                     <div class="mb-3 col-md-6">
                                         <label class="form-label" for="new_password">New Password</label>
-                                        <input type="password" class="form-control @error('new_password') is-invalid @enderror" name="new_password" id="new_password" placeholder="New Password">
-                                            @error('new_password')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
+                                        <input type="password" class="form-control @error('new_password') is-invalid @enderror" name="new_password" id="new_password" placeholder="New Password" required>
+                                        @error('new_password')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                     <div class="mb-3 col-md-6">
-                                        <label class="form-label" for="new_password_confirmation">Confirm Password</label>
-                                        <input type="password" class="form-control @error('new_password_confirmation') is-invalid @enderror" name="new_password_confirmation" id="new_password_confirmation" placeholder="Confirm Password">
-                                            @error('new_password_confirmation')
-                                                <span class="invalid-feedback" role="alert">
-                                                    <strong>{{ $message }}</strong>
-                                                </span>
-                                            @enderror
+                                        <label class="form-label" for="new_password_confirmation">Confirm New Password</label>
+                                        <input type="password" class="form-control @error('new_password_confirmation') is-invalid @enderror" name="new_password_confirmation" id="new_password_confirmation" placeholder="Confirm New Password" required>
+                                        @error('new_password_confirmation')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                     <div class="mt-3 pb-3 row">
                                         <div class="col-sm-12 text-right">
-                                            <button type="submit" class="btn btn-primary">Update</button>
+                                            <button type="submit" class="btn btn-primary"id="submit-button">Update</button>
                                         </div>
                                     </div>
                                 </div>

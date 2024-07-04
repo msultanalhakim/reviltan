@@ -7,15 +7,15 @@
 
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('account') }}">Account</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('account') }}">Accounts</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('account.add') }}">Add</a></li>
             </ol>
         </div>
         <div class="row">
             <div class="col-xl-8 col-lg-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Add Account</h4>
+                        <h4 class="card-title"><a href="{{ route('account') }}"><i class="fas fa-arrow-left"></i></a>  Add Account</h4>
                     </div>
                     <div class="card-body">
                         <div class="basic-form">
@@ -74,7 +74,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-sm">Insert</button>
+                                <button type="submit" class="btn btn-primary btn-sm" id="submit-button">Insert</button>
                             </form>
                         </div>
                     </div>

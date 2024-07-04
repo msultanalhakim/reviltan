@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Dashboard Vehicle')
+@section('page_title', 'Reviltan - Vehicle Add')
 @extends('dashboard.layouts.app')
 @section('style')
 <style>
@@ -42,15 +42,15 @@
 
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('vehicle') }}">Vehicles</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('vehicle') }}">Vehicles</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('vehicle.add') }}">Add</a></li>
             </ol>
         </div>
         <div class="row">
             <div class="col-xl-8 col-lg-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Add Vehicle</h4>
+                        <h4 class="card-title"><a href="{{ route('vehicle') }}"><i class="fas fa-arrow-left"></i></a> Add Vehicle</h4>
                     </div>
                     <div class="card-body">
                         <div class="basic-form">

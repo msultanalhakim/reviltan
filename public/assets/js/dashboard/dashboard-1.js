@@ -418,7 +418,7 @@
 				endingShape: 'rounded'
 			  },
 			},
-			colors:['#886CC0'],
+			colors:['#205295'],
 			dataLabels: {
 			  enabled: false,
 			},
@@ -546,7 +546,7 @@
 				},
 				
 			},
-			colors:['#ECECEC', '#886CC0', '#886CC0'],
+			colors:['#ECECEC', '#205295', '#205295'],
 			xaxis: {
 				show: false,
 				axisBorder: {
@@ -853,7 +853,7 @@
 	
 	var redial = function(){
 		  var options = {
-          series: [70],
+          series: [90],
           chart: {
           type: 'radialBar',
           offsetY: 0,
@@ -889,7 +889,7 @@
               value: {
                 offsetY: 5,
                 fontSize: '22px',
-				color:'#886CC0',
+				color:'#205295',
 				fontWeight:700,
               }
             }
@@ -916,7 +916,7 @@
         }, */
         fill: {
           type: 'gradient',
-		  colors:'#FF63E6',
+		  colors:'#205295',
           gradient: {
               shade: 'white',
               shadeIntensity: 0.15,
@@ -975,17 +975,7 @@
         chart.render();
     
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
  
 	/* Function ============ */
 		return {

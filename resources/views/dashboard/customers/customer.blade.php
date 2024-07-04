@@ -6,16 +6,16 @@
 
         <div class="row page-titles">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item active"><a href="javascript:void(0)">Shop</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Customers</a></li>
+                <li class="breadcrumb-item active"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('customer') }}">Customers</a></li>
             </ol>
         </div>
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title">Profile Datatable</h4><br>
-                        <a href="{{ route('customer.add') }}" class="btn btn-primary btn-sm">Add</a>
+                        <h4 class="card-title">Data Customers</h4><br>
+                        <a href="{{ route('customer.add') }}" class="btn btn-primary btn-sm"><i class="fas fa-plus"></i></a>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -27,31 +27,32 @@
                                         <th>Customers Name</th>
                                         <th>Email</th>
                                         <th>Phone</th>
-                                        <th>Address</th>
                                         <th>City</th>
                                         <th>Province</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
+                                    @foreach ($customers as $key => $customer)                                        
                                     <tr>
-                                        <td>1</td>
-                                        <td>Administrator</td>
-                                        <td>administrator@mail.com</td>
-                                        <td>082113155212</td>
-                                        <td>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Sed reiciendis
-                                            ipsam.!</td>
-                                        <td>Bogor</td>
-                                        <td>East Java</td>
+                                        <td>{{ $key+1 }}</td>
+                                        <td>{{ $customer->customer_name ?: '-'}}</td>
+                                        <td>{{ $customer->email ?: '-'}}</td>
+                                        <td>{{ $customer->phone ?: '-'}}</td>
+                                        <td>{{ $customer->city_name ?: '-'}}</td>
+                                        <td>{{ $customer->province_name ?: '-'}}</td>
                                         <td>
                                             <div class="d-flex">
-                                                <a href="#" class="btn btn-primary shadow btn-xs sharp me-1"><i
+                                                <a href="{{ route('customer.update', ['id' => $customer->customer_id]) }}" class="btn btn-primary shadow btn-xs sharp me-1"><i
                                                         class="fas fa-pencil-alt"></i></a>
-                                                <a href="#" class="btn btn-danger shadow btn-xs sharp"><i
+                                                @if (!in_array($customer->customer_id, $bookedCustomerIds))
+                                                <a href="" class="btn btn-danger shadow btn-xs sharp sweet-destroy" data-id="{{ $customer->customer_id }}"><i
                                                         class="fa fa-trash"></i></a>
+                                                @endif
                                             </div>
                                         </td>
                                     </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -66,4 +67,27 @@
     <!-- Datatable -->
     <script src="{{ asset('assets/vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/js/plugins-init/datatables.init.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('.sweet-destroy').on('click', function(e) {
+                e.preventDefault(); // Prevent default link behavior
+                var customerId = $(this).data('id');
+    
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'error',
+                    showCancelButton: true,
+                    confirmButtonClass: 'btn btn-primary',
+                    cancelButtonClass: 'btn btn-danger',
+                    confirmButtonText: 'Delete',
+                    cancelButtonText: 'Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = "{{ url('customer/destroy') }}/" + customerId; // Redirect to destroy route
+                    }
+                });
+            });
+        });
+    </script>
 @endsection

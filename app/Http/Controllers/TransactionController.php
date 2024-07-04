@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Detail;
 use App\Models\Item;
+use App\Models\Coupon;
+use App\Models\Detail;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 
@@ -18,6 +19,10 @@ class TransactionController extends Controller
         return view('dashboard.transactions.transaction', compact('transactionData'));
     }
 
+    public function create () {
+        return view('dashboard.transactions.transaction_add');
+    }
+
     public function viewManage ($id) {
         $fetchCode = Item::get();
         $transactionData = Transaction::where('transactions.reference_number', $id)
@@ -30,7 +35,10 @@ class TransactionController extends Controller
                             ->join('items', 'items.item_id', '=', 'details.item_id')
                             ->get();
 
-        return view('dashboard.transactions.transaction_manage', compact('fetchCode', 'transactionData', 'detailsData'));
+        $coupon = Coupon::where('coupon_code', $transactionData->coupon_code)
+        ->first();
+
+        return view('dashboard.transactions.transaction_manage', compact('fetchCode', 'transactionData', 'detailsData', 'coupon'));
     }
 
     public function fetchItem(Request $request)
@@ -96,30 +104,55 @@ class TransactionController extends Controller
 
         if ($request->has('action')) {
             $action = $request->input('action');
-    
-            if ($action === 'approve') {
-                // Handle approve action
-            } elseif ($action === 'reject') {
-                // Handle reject action
-            } elseif ($action === 'proceed') {
-                // Handle proceed action
-                $transaction = Transaction::where('reference_number', $reference_number)
+            $transaction = Transaction::where('reference_number', $reference_number)
                                         ->first();
 
-                if ($transaction) {
+            if ($transaction) {
+                if ($action == 'approve') {
+                    $transaction->payment_status = 'Paid';
+                    $transaction->save();
+
+                    $notification = [
+                        'message' => 'Transaction has been successfully approved',
+                        'alert-type' => 'success',
+                    ];
+                } elseif ($action == 'reject') {
+                    $transaction->payment_status = 'Failed';
+                    $transaction->save();
+
+                    $notification = [
+                        'message' => 'Transaction has been successfully rejected',
+                        'alert-type' => 'success',
+                    ];
+                } elseif ($action == 'proceed') {
+                    // Handle proceed action
                     $transaction->total = $request->total;
                     $transaction->save();
+
+                    $notification = [
+                        'message' => 'Transaction has been successfully proceeded',
+                        'alert-type' => 'success',
+                    ];
+                } elseif ($action == 'finish') {
+                    $transaction->transaction_status = 'Failed';
+                    $transaction->save();
+
+                    $notification = [
+                        'message' => 'Transaction has been successfully finished',
+                        'alert-type' => 'success',
+                    ];
+                } elseif ($action == 'paid') {
+                    $transaction->payment_status = 'Paid';
+                    $transaction->save();
+
+                    $notification = [
+                        'message' => 'Payment status has been successfully changed',
+                        'alert-type' => 'success',
+                    ];
                 }
             }
         }
 
-        
-
-        $notification = [
-            'message' => 'Transaction has been successfully proceeded',
-            'alert-type' => 'success',
-        ];
-        
         return redirect()->route('transaction.manage', ['id' => $reference_number])->with($notification);
     }
 }

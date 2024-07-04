@@ -9,7 +9,7 @@
                 <ul class="navbar-nav header-right">
                     <li class="nav-item dropdown  header-profile">
                         <a class="nav-link" href="javascript:void(0);" role="button" data-bs-toggle="dropdown">
-                            <img src="{{ (!empty($userData->photo) ? url(asset('assets/img/profile/'.$userData->photo)) : url(asset('assets/img/profile/users_default.png'))) }}" width="56" alt="">
+                            <img src="{{ (!empty($photo) ? url(asset('assets/img/profile/'.$photo)) : url(asset('assets/img/profile/users_default.png'))) }}" width="56" alt="">
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
                             <a href="{{ route('profile.view') }}" class="dropdown-item ai-icon">

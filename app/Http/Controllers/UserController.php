@@ -69,6 +69,8 @@ class UserController extends Controller
 
         $dataUser = User::find($user->id); 
         $dataCustomer = Customer::find($user->customer_id);
+        
+        $name = ucwords(strtolower($request->name)); // Capitalize first letter of each word
 
         if ($dataUser && $dataCustomer) {
             // Update user data
@@ -76,7 +78,7 @@ class UserController extends Controller
             $dataUser->save();
 
             // Update customer data
-            $dataCustomer->customer_name = $request->name;
+            $dataCustomer->customer_name = $name;
             $dataCustomer->phone = $request->phone;
             $dataCustomer->address = $request->address;
             $dataCustomer->province_id = $request->province;
@@ -98,7 +100,7 @@ class UserController extends Controller
             $dataCustomer->save();
 
             $notification = array(
-                'message' => 'Admin Profile Updated Successfully',
+                'message' => 'Profile has been updated successfully',
                 'alert-type' => 'success',
             );
 
@@ -116,15 +118,17 @@ class UserController extends Controller
 
 
     public function changePassword () {
-        $id = Auth::user()->id;
-        $userData = User::find($id);
+        $id = Auth::user()->customer_id;
+        $userData = Customer::join('users', 'users.customer_id', '=', 'customers.customer_id')
+        ->where('customers.customer_id', $id)
+        ->first();
+
         return view('dashboard.profile_change_password', compact('userData'));
     }
 
     public function storePassword (Request $request) {
         // Validation
         $request->validate([
-            'address' => ['string', 'max:255'],
             'old_password' => ['required'],
             'new_password' => ['min:8','required' ,'confirmed']
         ]);
@@ -149,7 +153,8 @@ class UserController extends Controller
                     'alert-type' => 'success',
                 ];
 
-                return back()->with($notification);
+                Auth::logout();
+                return redirect()->route('login')->with($notification);
             } else {
                 $notification = [
                     'message' => 'Failed to update password',
