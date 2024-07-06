@@ -1,3 +1,4 @@
+@section('page_title', 'Reviltan - Verify Email')
 @extends('layouts.app')
 
 @section('content')

@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Dashboard Accounts')
+@section('page_title', 'Reviltan - Dashboard Workshops')
 @extends('dashboard.layouts.app')
 @section('content')
 <div class="content-body" style="min-height: 60px;">
@@ -117,7 +117,7 @@
                                         <td>{{ $workshop->vehicle_name ?: '-'}}</td>
                                         <td>{{ $workshop->plate_number ?: '-'}}</td>
                                         <td>{{ $workshop->customer_name ?: $workshop->email ?: '-'}}</td>
-                                        <td>
+                                        <td>                                       @if ($workshop->vehicle_name != '')
                                             <div class="d-flex">
                                                 <!-- Form untuk mengubah status menjadi 'Underway' -->
                                                 <form id="postponedForm{{ $workshop->workshop_id }}" method="POST" action="{{ route('workshop.updateStatus', ['id' => $workshop->workshop_id]) }}">
@@ -133,6 +133,9 @@
                                                     <button type="button" class="btn btn-success shadow btn-xs sharp me-1 sweet-confirm" data-status="Finished"><i class="fas fa-check"></i></button>
                                                 </form>
                                             </div>
+                                            @else
+                                            Data unavailable
+                                            @endif
                                         </td>
                                     </tr>
                                     @endforeach
@@ -169,7 +172,7 @@
                     console.log(result); // Log the response
                     $.each(result.status, function (key, value) {
                         $("#status-dropdown").append('<option value="' + value
-                            .status + '">' + value.status + '</option>');
+                            .status + '">' + value.status + ' (Current Status)</option>');
                         $("#status-dropdown").append(
                             '<option value="Underway">Underway</option>');
                         $("#status-dropdown").append(
@@ -179,21 +182,19 @@
                     });
 
                     $.each(result.vehicles, function (key, value) {
-                        $("#vehicle-dropdown").append('<option value="' + value
-                            .vehicle_id + '">' + value.plate_number + ' - ' +
-                            value.vehicle_name + '</option>');
+                        $("#vehicle-dropdown").append('<option value="' + value.vehicle_id + '">' + value.plate_number + ' - ' + value.vehicle_name + ' (Current Vehicle)</option>');
                     });
+                
+                    // Check and append fetchVehicles if available
+                    if (fetchVehicles.length > 0) {
+                        $.each(fetchVehicles, function (key, value) {
+                            $("#vehicle-dropdown").append('<option value="' + value.vehicle_id + '">' + value.plate_number + ' - ' + value.vehicle_name + '</option>');
+                        });
+                    } else {
+                        $("#vehicle-dropdown").append('<option value="">' + 'No vehicles are available for servicing' + '</option>');
+                    }
                 }
             });
-            if (fetchVehicles.length > 0) {
-                $.each(fetchVehicles, function (key, value) {
-                    $("#vehicle-dropdown").append('<option value="' + value.vehicle_id + '">' +
-                        value.plate_number + ' - ' + value.vehicle_name + '</option>');
-                });
-            } else {
-                $("#vehicle-dropdown").append('<option value="">' + 'No vehicles are available for servicing' + '</option>');
-            }
-
         });
 
     });

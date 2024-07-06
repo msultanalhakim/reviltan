@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Dashboard')
+@section('page_title', 'Reviltan - Workshop Add')
 @extends('dashboard.layouts.app')
 @section('style')
     <!-- Daterange picker -->

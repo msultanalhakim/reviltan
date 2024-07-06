@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - City Update')
+@section('page_title', 'Reviltan - Coupon Update')
 @extends('dashboard.layouts.app')
 @section('content')
 <div class="content-body" style="min-height: 60px;">
@@ -32,7 +32,7 @@
                                         @enderror
                                     </div>
                                     <div class="mb-3 col-md-6">
-                                        <label>Province Name</label>
+                                        <label>Price</label>
                                         <div class="basic-form">
                                             <input type="number" class="form-control @error('price') is-invalid @enderror" value="{{ $coupon->price }}" min="0" name="price" placeholder="Price" required>
                                             @error('price')

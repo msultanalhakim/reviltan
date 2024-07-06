@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Items')
+@section('page_title', 'Reviltan - Dashboard Items')
 @extends('dashboard.layouts.app')
 @section('content')
 <div class="content-body" style="min-height: 60px;">

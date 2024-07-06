@@ -334,7 +334,7 @@ use Carbon\Carbon;
                 </div>
             </div>
         </div>
-        @elseif (!empty($bookingUnderway) && $bookingUnderway->isNotEmpty())
+        @elseif ($bookingUnderway->isNotEmpty() &&  $bookingFinished->isEmpty())
         <div class="row">
             <div class="col-xl-6 col-xxl-12">
                 <div class="card">
@@ -342,6 +342,18 @@ use Carbon\Carbon;
                     <div class="card-header d-block mb-4">
                         <h4 class="card-title">Service Progress</h4>
                         <p class="mb-3 subtitle">Your vehicle is currently being worked on.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @elseif ($bookingFinished->isNotEmpty())
+        <div class="row">
+            <div class="col-xl-6 col-xxl-12">
+                <div class="card">
+                    <div class="alert alert-success solid mx-4 mt-4 mb-0"><strong>Finished!</strong> Please wait until the transaction is generated</div>
+                    <div class="card-header d-block mb-4">
+                        <h4 class="card-title">Service Finished</h4>
+                        <p class="mb-3 subtitle">Your vehicle's has been serviced.</p>
                     </div>
                 </div>
             </div>
@@ -566,11 +578,13 @@ use Carbon\Carbon;
                         <h4 class="card-title">Booking Schedule </h4>
                         <p class="mb-3 subtitle">Your booking schedule has been set!</p>
                         <span class="btn-sm btn-dark mt-4">
-                            @foreach ($formattedBookingData as $booking)
-                            {{ $booking['booking_date'] }}
-                            at
-                            {{ $booking['booking_time'] }}
-                            @endforeach
+                            @if($formattedBookingAccepted)
+                                <span class="btn-sm btn-dark mt-4">
+                                    {{ $formattedBookingAccepted['booking_date'] }}
+                                    at
+                                    {{ $formattedBookingAccepted['booking_time'] }}
+                                </span>
+                            @endif
                         </span>
                     </div>
                 </div>

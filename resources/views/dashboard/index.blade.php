@@ -80,7 +80,7 @@
                                                             <td>{{ $workshop->workshop_name ?: '-'}}</td>
                                                             <td>{{ $workshop->vehicle_name ?: '-'}}</td>
                                                             <td>{{ $workshop->vehicle_color ?: '-'}}</td>
-                                                            <td>{{ $workshop->plate_number ?: '-'}}</td>
+                                                            <td>{{ $workshop->censored_plate_number ?: '-'}}</td>
                                                             <td>
                                                                 @if ($workshop->status == 'Underway' && $workshop->vehicle_name != '')
                                                                 <span class="badge badge-rounded badge-warning">Underway</span>
@@ -94,11 +94,11 @@
                                                             
                                                             </td>
                                                             <td>
-                                                                @if ($workshop->updated_at)
-                                                                {{ $workshop->updated_at->format('H:i') }}
-                                                                @else
+                                                                @if ($workshop->workshop_updated_at)
+                                                                {{ \Carbon\Carbon::parse($workshop->workshop_updated_at)->format('H:i') }}
+                                                            @else
                                                                 -
-                                                                @endif
+                                                            @endif
                                                             
                                                             </td>
                                                         </tr>

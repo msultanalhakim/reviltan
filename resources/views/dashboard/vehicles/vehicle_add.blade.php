@@ -95,7 +95,7 @@
                                     </div>
                                     <div class="mb-3 col-md-12">
                                         <label class="form-label">Mileage</label>
-                                        <input type="text" class="form-control  @error('mileage') is-invalid @enderror" name="mileage" placeholder="Mileage">
+                                        <input type="number" class="form-control  @error('mileage') is-invalid @enderror" name="mileage" placeholder="Mileage">
                                         @error('mileage')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>

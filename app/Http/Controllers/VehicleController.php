@@ -47,7 +47,7 @@ class VehicleController extends Controller
             'vehicle_color' => 'required',
             'chassis_number' => 'required',
             'engine_number' => 'required',
-            'mileage' => 'required',
+            'mileage' => 'required|numeric',
             'plate_number' => 'required',
             'customer_id' => 'required'
         ]);
@@ -78,7 +78,7 @@ class VehicleController extends Controller
             'vehicle_color' => 'required',
             'chassis_number' => 'required',
             'engine_number' => 'required',
-            'mileage' => 'required',
+            'mileage' => 'required|numeric',
             'plate_number' => 'required',
         ]);
 
@@ -124,7 +124,7 @@ class VehicleController extends Controller
             // If not, redirect to a different page with an error message
             $notification = array(
                 'message' => 'You do not have permission to edit this vehicle.',
-                'alert-type' => 'danger',
+                'alert-type' => 'error',
             );
             return redirect()->route('customer.vehicles')->with($notification);
         }
@@ -139,7 +139,7 @@ class VehicleController extends Controller
             'vehicle_color' => 'required',
             'chassis_number' => 'required',
             'engine_number' => 'required',
-            'mileage' => 'required',
+            'mileage' => 'required|numeric',
             'plate_number' => 'required',
             'customer_id' => 'required'
         ]);
@@ -173,7 +173,7 @@ class VehicleController extends Controller
             'vehicle_color' => 'required',
             'chassis_number' => 'required',
             'engine_number' => 'required',
-            'mileage' => 'required',
+            'mileage' => 'required|numeric',
             'plate_number' => 'required'
         ]);
 

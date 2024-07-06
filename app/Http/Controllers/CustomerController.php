@@ -98,7 +98,7 @@ class CustomerController extends Controller
 
         if ($customer) {
             $oldemail = $customer->email;
-            $customer->customer_name = $request->customer_name;
+            $customer->name = $request->customer_name;
             $customer->email = $request->email;
             $customer->phone = $request->phone;
             $customer->address = $request->address;

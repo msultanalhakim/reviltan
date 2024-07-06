@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Dashboard')
+@section('page_title', 'Reviltan - Dashboard Transactions')
 @extends('dashboard.layouts.app')
 @section('content')
 <div class="content-body">
@@ -22,7 +22,6 @@
                             <table id="example3" class="table table-sm mb-0">
                                 <thead>
                                     <tr>
-
                                         <th class="align-middle">Reference Number</th>
                                         <th class="align-middle">Date</th>
                                         <th class="align-middle">Customers Name</th>

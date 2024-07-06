@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Models\Coupon;
 use App\Models\Detail;
+use App\Models\History;
+use App\Models\Vehicle;
+use App\Models\Customer;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 
@@ -14,6 +17,7 @@ class TransactionController extends Controller
         $transactionData = Transaction::leftJoin('customers', 'transactions.customer_id', '=', 'customers.customer_id')
                                     ->leftJoin('vehicles', 'transactions.vehicle_id', '=', 'vehicles.vehicle_id')
                                     ->select('transactions.*', 'customers.customer_name', 'customers.email', 'vehicles.vehicle_name', 'vehicles.plate_number')
+                                    ->orderBy('transactions.created_at', 'desc')
                                     ->get();
 
         return view('dashboard.transactions.transaction', compact('transactionData'));
@@ -134,13 +138,41 @@ class TransactionController extends Controller
                         'alert-type' => 'success',
                     ];
                 } elseif ($action == 'finish') {
-                    $transaction->transaction_status = 'Failed';
-                    $transaction->save();
-
-                    $notification = [
-                        'message' => 'Transaction has been successfully finished',
-                        'alert-type' => 'success',
-                    ];
+                    if ($transaction) {
+                        $transaction->transaction_status = 'Failed';
+                        $transaction->save();
+    
+                        $customer = Customer::where('customers', $transaction->customer_id)->first();
+                        $vehicle = Vehicle::where('vehicle', $transaction->vehicle_id)->first();
+                        $coupon = Coupon::where('coupon_code', $transaction->coupon_code)->first();
+    
+                        History::create([
+                            'reference_number' => $transaction->reference_number,
+                            'customer_name' => $customer->customer_name,
+                            'email' => $customer->email,
+                            'phone' => $customer->phone,
+                            'address' => $customer->address,
+                            'vehicle_name' => $vehicle->vehicle_name,
+                            'vehicle_color' => $vehicle->vehicle_color,
+                            'chassis_number' => $vehicle->chassis_number,
+                            'engine_number' => $vehicle->engine_number,
+                            'mileage' => $vehicle->mileage,
+                            'plate_number' => $vehicle->plate_number,
+                            'total' => $transaction->total,
+                            'discount' => $coupon->price,
+                            'coupon_code' => $transaction->coupon_code,
+                            'payment_method' => $transaction->payment_method,
+                            'payment_status' => $transaction->payment_status,
+                            'transaction_status' => 'Failed',
+                        ]);
+    
+                        $notification = array(
+                            'message' => 'Transaction has been successfully finished',
+                            'alert-type' => 'success',
+                        );
+    
+                        return redirect()->route('transaction')->with($notification);
+                    }
                 } elseif ($action == 'paid') {
                     $transaction->payment_status = 'Paid';
                     $transaction->save();

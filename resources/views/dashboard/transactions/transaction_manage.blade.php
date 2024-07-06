@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Dashboard')
+@section('page_title', 'Reviltan - Transaction Manage')
 @extends('dashboard.layouts.app')
 @section('content')
 <div class="content-body">

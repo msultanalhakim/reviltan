@@ -96,7 +96,7 @@
                                     </div>
                                     <div class="mb-3 col-md-12">
                                         <label class="form-label">Mileage</label>
-                                        <input type="text" class="form-control @error('mileage') is-invalid @enderror" name="mileage" value="{{ $vehicle->mileage }}" placeholder="Mileage" required>
+                                        <input type="number" class="form-control @error('mileage') is-invalid @enderror" name="mileage" value="{{ $vehicle->mileage }}" placeholder="Mileage" required>
                                         @error('mileage')
                                         <span class="invalid-feedback" role="alert">
                                             <strong>{{ $message }}</strong>

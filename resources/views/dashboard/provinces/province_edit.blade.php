@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Province Edit')
+@section('page_title', 'Reviltan - Province Update')
 @extends('dashboard.layouts.app')
 @section('content')
 <div class="content-body" style="min-height: 60px;">

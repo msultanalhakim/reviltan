@@ -1,7 +1,7 @@
 <div class="dlabnav">
     <div class="dlabnav-scroll">
         <ul class="metismenu" id="menu">
-            <li>
+            <li class="{{ request()->is('/') || request()->is('dashboard') ? 'mm-active' : '' }}">
                 <a href="{{ route('dashboard') }}" aria-expanded="false">
                     <i class="fas fa-home"></i>
                     <span class="nav-text">Dashboard</span>
@@ -19,6 +19,12 @@
                     <a href="{{ route('service') }}" aria-expanded="false">
                         <i class="fas fa-tools"></i>
                         <span class="nav-text">Service</span>
+                    </a>
+                </li>
+                <li id="service-sidebar-item-service">
+                    <a href="{{ route('history') }}" aria-expanded="false">
+                        <i class="fas fa-history"></i>
+                        <span class="nav-text">Transactions</span>
                     </a>
                 </li>
             @endif

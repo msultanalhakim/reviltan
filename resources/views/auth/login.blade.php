@@ -1,3 +1,4 @@
+@section('page_title', 'Reviltan - Login')
 @extends('layouts.app')
 
 @section('content')

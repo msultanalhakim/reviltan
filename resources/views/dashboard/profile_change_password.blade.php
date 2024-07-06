@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Profile User')
+@section('page_title', 'Reviltan - Change Password')
 @extends('dashboard.layouts.app')
 @section('content')
 <div class="content-body">

@@ -87,7 +87,7 @@ class UserController extends Controller
             // Handle file upload
             if ($request->hasFile('photo')) {
                 // Delete old photo if exists
-                if ($dataCustomer->photo && file_exists(public_path('assets/img/profile/' . $dataCustomer->photo))) {
+                if ($dataCustomer->photo && file_exists(public_path('../../public/assets/img/profile/' . $dataCustomer->photo))) {
                     @unlink(public_path('assets/img/profile/' . $dataCustomer->photo));
                 }
 

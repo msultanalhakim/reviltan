@@ -1,4 +1,4 @@
-@section('page_title', 'Reviltan - Dashboard Accounts')
+@section('page_title', 'Reviltan -  Account Add')
 @extends('dashboard.layouts.app')
 
 @section('content')

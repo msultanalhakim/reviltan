@@ -62,7 +62,6 @@ class ServiceController extends Controller
         $bookingData = Booking::where('status', '=', 'Reserved')
                             ->orderBy('booking_time', 'asc')
                             ->get();
-
         if ($bookingData) {
             // Format the booking data
             $formattedBookingData = $bookingData->map(function($booking) {
@@ -73,12 +72,33 @@ class ServiceController extends Controller
                 ];
             });
         }
+        
+        $bookingAccepted = Booking::where('status', '=', 'Reserved')
+        ->where('customer_id', $id)
+        ->first();
+
+        if ($bookingAccepted) {
+            $formattedBookingAccepted = [
+                'booking_time' => Carbon::parse($bookingAccepted->booking_time)->format('H:i'),
+                'booking_date' => Carbon::parse($bookingAccepted->booking_time)->format('l, d F Y'),
+                'status' => $bookingAccepted->status,
+            ];
+        } else {
+            $formattedBookingAccepted = null;
+        }
 
         $bookingUnderway = Booking::join('workshops', 'workshops.booking_id', '=', 'bookings.booking_id')
                                 ->join('customers', 'customers.customer_id', '=', 'bookings.customer_id')
                                 ->where('bookings.customer_id', $id)
                                 ->where('bookings.status', '=', 'Reserved')
                                 ->get();
+
+        $bookingFinished = Booking::join('workshops', 'workshops.booking_id', '=', 'bookings.booking_id')
+        ->join('customers', 'customers.customer_id', '=', 'bookings.customer_id')
+        ->where('bookings.customer_id', $id)
+        ->where('bookings.status', '=', 'Reserved')
+        ->where('workshops.status', '=', 'Finished')
+        ->get();
 
         $transactionData = Transaction::join('bookings', 'bookings.booking_id', '=', 'transactions.booking_id')
                                 ->join('customers', 'customers.customer_id', '=', 'transactions.customer_id')
@@ -93,7 +113,7 @@ class ServiceController extends Controller
                                 ->first();
 
         if (!$transactionData) {
-            return view('dashboard.services.service', compact('userData', 'vehicleData', 'userBooking', 'bookingUnderway', 'transactionData', 'formattedBookingData', 'formattedUserBooking'));
+            return view('dashboard.services.service', compact('userData', 'vehicleData', 'userBooking', 'bookingUnderway', 'bookingFinished', 'transactionData', 'formattedBookingData', 'formattedUserBooking', 'formattedBookingAccepted'));
         } else {
             $detailsData = Detail::where('reference_number', $transactionData->reference_number)
             ->join('items', 'items.item_id', '=', 'details.item_id')
@@ -102,7 +122,7 @@ class ServiceController extends Controller
             $coupon = Coupon::where('coupon_code', $transactionData->coupon_code)
             ->first();
             // dd($transactionData->reference_number,$transactionData->customer_name );
-            return view('dashboard.services.service', compact('userData', 'vehicleData', 'userBooking', 'bookingUnderway', 'transactionData', 'coupon', 'detailsData', 'formattedBookingData', 'formattedUserBooking'));
+            return view('dashboard.services.service', compact('userData', 'vehicleData', 'userBooking', 'bookingUnderway', 'bookingFinished', 'transactionData', 'coupon', 'detailsData', 'formattedBookingData', 'formattedUserBooking', 'formattedBookingAccepted'));
         }
     }
 
@@ -123,17 +143,24 @@ class ServiceController extends Controller
                 
         $datetime = Carbon::parse($request->date)->format('Y-m-d').' '.Carbon::parse($request->time)->format('H:i:s');
 
-        Booking::create([
+        $booking = Booking::create([
             'booking_time' => $datetime,
             'status' => 'Reserved', 
             'customer_id' => $request->customer_id,
             'vehicle_id' => $request->vehicle_id
         ]);
 
-        $notification = array(
-            'message' => 'Booking has been successfully added',
-            'alert-type' => 'success',
-        );
+        if ($booking) {
+            $notification = array(
+                'message' => 'Booking has been successfully added',
+                'alert-type' => 'success',
+            );
+        } else {
+            $notification = array(
+                'message' => 'Booking has been failed to added',
+                'alert-type' => 'error',
+            );
+        }
 
         return redirect()->route('service')->with($notification);
     }
@@ -157,8 +184,13 @@ class ServiceController extends Controller
             $transactionData->save();
 
             $notification = array(
-                'message' => 'Promo added successfully',
+                'message' => 'Promo has been added successfully',
                 'alert-type' => 'success',
+            );
+        } else {
+            $notification = array(
+                'message' => 'Promo has been failed to added',
+                'alert-type' => 'error',
             );
         }
         return redirect()->route('service')->with($notification);
@@ -175,6 +207,11 @@ class ServiceController extends Controller
             $notification = array(
                 'message' => 'Promo removed successfully',
                 'alert-type' => 'success',
+            );
+        } else {
+            $notification = array(
+                'message' => 'Promo has been failed to removed',
+                'alert-type' => 'error',
             );
         }
 
@@ -229,16 +266,28 @@ class ServiceController extends Controller
                     $transaction->transaction_status = 'Finished';
                     $transaction->save();
 
+                    $customer = Customer::where('customer_id', $transaction->customer_id)->first();
+                    $vehicle = Vehicle::where('vehicle_id', $transaction->vehicle_id)->first();
+                    $coupon = Coupon::where('coupon_code', $transaction->coupon_code)->first();
+
                     History::create([
                         'reference_number' => $transaction->reference_number,
+                        'customer_name' => $customer->customer_name,
+                        'email' => $customer->email,
+                        'phone' => $customer->phone,
+                        'address' => $customer->address,
+                        'vehicle_name' => $vehicle->vehicle_name,
+                        'vehicle_color' => $vehicle->vehicle_color,
+                        'chassis_number' => $vehicle->chassis_number,
+                        'engine_number' => $vehicle->engine_number,
+                        'mileage' => $vehicle->mileage,
+                        'plate_number' => $vehicle->plate_number,
                         'total' => $transaction->total,
+                        'discount' => $coupon->price,
                         'coupon_code' => $transaction->coupon_code,
                         'payment_method' => $transaction->payment_method,
                         'payment_status' => $transaction->payment_status,
                         'transaction_status' => 'Finished',
-                        'vehicle_id' => $transaction->vehicle_id,
-                        'customer_id' => $transaction->customer_id,
-                        'booking_id' => $transaction->booking_id
                     ]);
 
                     $notification = array(
@@ -246,9 +295,13 @@ class ServiceController extends Controller
                         'alert-type' => 'success',
                     );
 
-                    return redirect()->route('transaction')->with($notification);
+                    return redirect()->route('service')->with($notification);
                 }
+            } else {
+                abort(404);
             }
+        } else {
+            abort(404);
         }
     }
 }

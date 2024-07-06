@@ -8,15 +8,15 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Toastr -->
-    <title>@yield('title')</title>
+    <title>@yield('page_title')</title>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.css" >
-    <link rel="shortcut icon" type="image/png" href="images/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/favicon.ico') }}">
     <link href="{{ asset('assets/css/style.css') }}" rel="stylesheet">
     <style>
         body {
-            background:url({{asset('assets/img/milan-csizmadia-vQ2ucJwoZH8-unsplash.jpg')}});
-            background-size:cover;
-            background-position:center;
+            background: url('{{ asset('assets/img/milan-csizmadia-vQ2ucJwoZH8-unsplash.jpg') }}');
+            background-size: cover;
+            background-position: center;
         }
     </style>
 </head>
@@ -43,7 +43,5 @@
         }
     </script>
     @endif 
-
 </body>
-
 </html>

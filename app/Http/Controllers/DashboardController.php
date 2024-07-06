@@ -10,7 +10,7 @@ class DashboardController extends Controller
     public function view()
 {
     // Ambil data workshop dan vehicle dengan join
-    $workshops = Workshop::select('workshops.*', 'vehicles.*')
+    $workshops = Workshop::select('workshops.updated_at as workshop_updated_at', 'workshops.*', 'vehicles.*')
         ->leftJoin('vehicles', 'workshops.vehicle_id', '=', 'vehicles.vehicle_id')
         ->orderBy('workshops.workshop_name', 'asc')
         ->get();
@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $plateNumber = $workshop->plate_number;
 
         // Jika panjang nomor plat kurang dari 3 karakter, tidak lakukan penyensoran
-        if (strlen($plateNumber) <= 2) {
+        if (strlen($plateNumber) <= 3) {
             return $workshop; // Kembalikan workshop tanpa perubahan
         }
 
